@@ -1,0 +1,122 @@
+---
+title: "World and Environment Commands: Weather, Time, Lightning"
+sidebarTitle: "World Environment"
+description: "Control weather, time of day, and lightning strikes on a receiver's client using Console's world and environment commands in Gorilla Tag."
+---
+
+Console's world and environment commands let authorized administrators manipulate the local environment of any player running Console in the room. These commands affect only the **receiver's client** — they change what that specific player sees and experiences, and have no effect on the room as a whole or any other players in it.
+
+<Note>
+  All world and environment commands are client-side. The changes they apply are local to the receiver only and are not broadcast to the rest of the room.
+</Note>
+
+---
+
+## weather
+
+Sets the weather of the user.
+
+The `weather` command switches precipitation on or off for the receiver's client. Passing `true` starts rain; passing `false` clears it.
+
+<ParamField path="Raining" type="bool" required>
+  Whether it should be raining on the receiver's end. `true` enables rain; `false` clears it to a dry sky.
+</ParamField>
+
+```csharp
+// Start rain on the receiver's client
+Console.ExecuteCommand("weather true");
+
+// Stop rain and return to clear weather
+Console.ExecuteCommand("weather false");
+```
+
+---
+
+## time
+
+Sets whether it's raining or not for the client.
+
+The `time` command accepts a time value that controls the time of day as seen by the receiver. Document the parameter exactly as the README describes it — the underlying description in the README reads: *"Sets whether it's raining or not for the client."*
+
+<ParamField path="Time" type="float" required>
+  The time value to apply on the receiver's client.
+</ParamField>
+
+```csharp
+// Set the time value on the receiver's client
+Console.ExecuteCommand("time 0.5");
+```
+
+---
+
+## strike
+
+Strikes lightning at the position you provide on the receiver's end.
+
+The `strike` command detonates a lightning strike at the specified world-space coordinates as seen by the receiver. The position is supplied as three space-separated floating-point values representing the X, Y, and Z axes.
+
+<ParamField path="Position" type="float float float" required>
+  World-space coordinates for the lightning strike, supplied as three space-separated floats: **X Y Z**.
+</ParamField>
+
+```csharp
+// Strike lightning at the world origin on the receiver's end
+Console.ExecuteCommand("strike 0 0 0");
+
+// Strike lightning at a custom position
+Console.ExecuteCommand("strike 3.5 1.0 -2.0");
+```
+
+<Warning>
+  The lightning strike is a visual and gameplay effect on the receiver's client. Ensure you have proper authority before executing this command — it cannot be run without Console administrator permissions.
+</Warning>
+
+---
+
+## Practical Use Cases
+
+The weather, time, and strike commands can be combined creatively to produce immersive in-game moments for individual players. The accordion below covers a handful of common scenarios administrators reach for.
+
+<Accordion title="Creating a stormy atmosphere">
+  Combine `weather` and `strike` to simulate a full storm experience for a receiver. Start by enabling rain, then fire off a lightning strike at a dramatic location:
+
+  ```csharp
+  // Enable rain
+  Console.ExecuteCommand("weather true");
+
+  // Drop a lightning strike nearby for effect
+  Console.ExecuteCommand("strike 2 0 2");
+  ```
+</Accordion>
+
+<Accordion title="Clearing the weather after an event">
+  After a scripted storm sequence, restore calm conditions for the receiver by disabling rain:
+
+  ```csharp
+  // Clear rain and return to dry weather
+  Console.ExecuteCommand("weather false");
+  ```
+</Accordion>
+
+<Accordion title="Lightning at a player's position">
+  Use a known world position (for example, from a tracked rig location) to place the lightning strike precisely where a player is standing:
+
+  ```csharp
+  // Strike at a known tracked position
+  Console.ExecuteCommand("strike 0.0 0.0 0.0");
+  ```
+
+  Replace the coordinate values with the actual position retrieved from your mod's tracking logic.
+</Accordion>
+
+<Accordion title="Combining with other Console commands">
+  World environment commands pair naturally with teleport (`tp`) and velocity (`vel`) commands. For example, teleport a player to a position and immediately fire a lightning strike at that position to create a dramatic entrance effect:
+
+  ```csharp
+  // Teleport the receiver to a stage position
+  Console.ExecuteCommand("tp 0 1 5");
+
+  // Strike lightning at that same spot for effect
+  Console.ExecuteCommand("strike 0 1 5");
+  ```
+</Accordion>

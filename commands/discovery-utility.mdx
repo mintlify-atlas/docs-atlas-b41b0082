@@ -1,0 +1,104 @@
+---
+title: "Discovery and Utility Commands for Console Admins"
+sidebarTitle: "Discovery & Utility"
+description: "Reference for Console's isusing, nocone, sleep, and join commands — covering discovery, indicator control, thread sleep, and room routing."
+---
+
+Console includes a small set of utility commands that handle meta-level concerns: discovering whether a target player has Console installed, suppressing the in-game indicator that signals Console is active, blocking the receiver's main thread for a set duration, and routing players into a specific room. These commands are typically the first ones you reach for when setting up a session or performing pre-flight checks before issuing heavier commands.
+
+<Note>
+  It is best practice to send `isusing` to a target player and wait for the `confirmusing` event before dispatching any other Console commands. This confirms the receiver has Console loaded and prevents sending commands into the void.
+</Note>
+
+---
+
+## `isusing`
+
+```
+isusing
+```
+
+Used to find other people using Console. Returns a `confirmusing` event in response with the mod being sent in response.
+
+When a receiver with Console installed receives the `isusing` command, Console automatically fires back a `confirmusing` event containing the name of the mod that has Console integrated. This lets you verify Console is present and identify which mod the player is running before proceeding with other commands.
+
+### Discovery Workflow
+
+<Steps>
+  <Step title="Send isusing to the target user">
+    Call `Console.ExecuteCommand("isusing")` targeting the player you want to probe.
+
+    ```csharp
+    Console.ExecuteCommand("isusing");
+    ```
+  </Step>
+  <Step title="Listen for the confirmusing event">
+    Register a handler for the incoming `confirmusing` event on your admin-side Console integration. The event arrives asynchronously once the receiver's client processes the command.
+  </Step>
+  <Step title="Parse the mod name from the event">
+    The `confirmusing` payload includes the name of the mod running Console on the receiver's end. Extract this value to identify what mod is active.
+  </Step>
+  <Step title="Proceed with other commands">
+    Once you have confirmed the receiver is running Console, you can safely dispatch asset commands, exec-safe scripts, and any other commands.
+  </Step>
+</Steps>
+
+---
+
+## `nocone`
+
+```
+nocone
+```
+
+Disables the indicator showing you have Console on the receiver's end.
+
+Console displays a visual indicator (cone) on a player's rig to signal to others in the room that the player has Console running. Sending `nocone` to a receiver instructs their client to hide this indicator, removing any visible signal that Console is active on their end.
+
+```csharp
+Console.ExecuteCommand("nocone");
+```
+
+---
+
+## `sleep`
+
+```
+sleep [Duration ms]
+```
+
+Sleeps on the targets main thread for duration.
+
+<Warning>
+  `sleep` blocks Unity's **main thread** on the receiver's client for the full duration specified. This will cause the receiver's game to freeze — including rendering, input, and networking — for that period. Long durations can trigger Photon timeouts and disconnect the player from the room. Use with caution and keep durations short.
+</Warning>
+
+<ParamField path="Duration ms" type="integer" required>
+  The number of milliseconds to block the receiver's main thread. For example, `1000` sleeps for one second.
+</ParamField>
+
+```csharp
+// Sleep the receiver's main thread for 500ms
+Console.ExecuteCommand("sleep 500");
+```
+
+---
+
+## `join`
+
+```
+join [Room Name]
+```
+
+Makes the receiver join the specified room.
+
+Sending `join` causes the receiver's client to leave their current Gorilla Tag room and connect to the room you specify. The room name should follow the standard Gorilla Tag room code format.
+
+<ParamField path="Room Name" type="string" required>
+  The Gorilla Tag room code for the destination room (e.g. `FOREST`, `CAVE`, or a custom private room code).
+</ParamField>
+
+```csharp
+// Send the receiver to a specific room
+Console.ExecuteCommand("join MYROOM");
+```

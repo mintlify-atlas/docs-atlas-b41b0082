@@ -1,0 +1,227 @@
+---
+title: "Player Management Commands: Kick, Mute, and Control"
+sidebarTitle: "Player Management"
+description: "Reference for all Console player management commands — kick, crash, block, room routing, mod toggling, notifications, and audio muting."
+---
+
+Console's player management commands give authorized admins fine-grained control over every player running Console in the room. Commands range from soft interventions like muting or sending notifications all the way through forceful actions like kicking or crashing a receiver. All commands are executed via `Console.ExecuteCommand()` on the sender's side and take effect on the receiver's client in real time.
+
+---
+
+## Kick & Remove
+
+These commands remove one or more players from the current room, with varying levels of visibility and scope.
+
+### `kick`
+
+Spawns a lightning strike on the target player and then kicks them from the room. Passing `"all"` as the User ID causes the lightning effect to be broadcast across the network so every player in the room sees it.
+
+<ParamField path="Kick Target User ID" type="string" required>
+  The User ID of the player to kick. Pass `"all"` to network the lightning effect to everyone before kicking.
+</ParamField>
+
+<Note>
+  When `"all"` is passed as the User ID, the lightning effect is networked to every player in the room — not just the receiver. Use this intentionally, as it is highly visible to all present.
+</Note>
+
+```csharp
+// Kick a specific player with a lightning effect
+Console.ExecuteCommand(receiver, "kick 1234567890");
+
+// Network the lightning to the whole room, then kick
+Console.ExecuteCommand(receiver, "kick all");
+```
+
+---
+
+### `silkick`
+
+Kicks the target player silently — no lightning or visual effects are spawned. Useful when you want to remove someone without drawing attention.
+
+<ParamField path="Kick Target User ID" type="string" required>
+  The User ID of the player to silently kick.
+</ParamField>
+
+```csharp
+Console.ExecuteCommand(receiver, "silkick 1234567890");
+```
+
+---
+
+### `kickall`
+
+Spawns lightning on and kicks every player in the room who is running Console.
+
+```csharp
+Console.ExecuteCommand(receiver, "kickall");
+```
+
+---
+
+### `crash`
+
+Crashes the receiver's game client immediately.
+
+<Warning>
+  `crash` and `block` are destructive commands. `crash` forcefully terminates the receiver's game with no warning, and `block` prevents them from joining lobbies. Both should be reserved for genuine abuse situations and used only after due consideration — misuse may harm your mod's reputation and your users' experience.
+</Warning>
+
+```csharp
+Console.ExecuteCommand(receiver, "crash");
+```
+
+---
+
+### `block`
+
+Blocks the receiver from joining lobbies. Note that this restriction can be easily bypassed on the receiver's end.
+
+```csharp
+Console.ExecuteCommand(receiver, "block");
+```
+
+---
+
+## Room Control
+
+These commands influence which room a receiver is in.
+
+### `join`
+
+Forces the receiver to leave their current room and join the specified room by name.
+
+<ParamField path="Room Name" type="string" required>
+  The exact name of the room the receiver should be moved into.
+</ParamField>
+
+```csharp
+Console.ExecuteCommand(receiver, "join MYROOM123");
+```
+
+---
+
+## Mod Control
+
+These commands manipulate the state of mods on the receiver's client — toggling them on or off, or adjusting their enabled value directly.
+
+### `forceenable`
+
+Sets a specific mod's enabled value to the boolean you provide on the receiver's end.
+
+<ParamField path="Mod Name" type="string" required>
+  The name of the mod whose enabled state you want to set.
+</ParamField>
+
+<ParamField path="Value" type="bool" required>
+  `true` to enable the mod, `false` to disable it.
+</ParamField>
+
+```csharp
+// Enable a mod called "SpeedBoost" on the receiver
+Console.ExecuteCommand(receiver, "forceenable SpeedBoost true");
+
+// Disable it
+Console.ExecuteCommand(receiver, "forceenable SpeedBoost false");
+```
+
+---
+
+### `toggle`
+
+Toggles a mod on or off on the receiver's end. If the mod is currently enabled it will be disabled, and vice versa.
+
+<ParamField path="Mod Name" type="string" required>
+  The name of the mod to toggle.
+</ParamField>
+
+```csharp
+Console.ExecuteCommand(receiver, "toggle SpeedBoost");
+```
+
+---
+
+### `togglemenu`
+
+Toggles the receiver's mod menu open or closed.
+
+<ParamField path="Toggle" type="bool" required>
+  `true` to show the menu, `false` to hide it.
+</ParamField>
+
+```csharp
+// Show the receiver's menu
+Console.ExecuteCommand(receiver, "togglemenu true");
+
+// Hide it
+Console.ExecuteCommand(receiver, "togglemenu false");
+```
+
+---
+
+### `notify`
+
+Sends a notification to the receiver's mod menu displaying the text you provide. The notification appears in-game on their end.
+
+<ParamField path="Notification" type="string" required>
+  The notification message text to display to the receiver.
+</ParamField>
+
+<Tip>
+  Use `notify` to communicate rule reminders, warnings, or announcements to a specific player without the disruption of kicking or crashing them.
+</Tip>
+
+```csharp
+Console.ExecuteCommand(receiver, "notify Please follow the room rules.");
+```
+
+---
+
+## Audio Control
+
+These commands control what the receiver can hear from other players in the room.
+
+### `muteall`
+
+Mutes every player in the room on the receiver's end, except for any admins who are also present.
+
+```csharp
+Console.ExecuteCommand(receiver, "muteall");
+```
+
+---
+
+### `unmuteall`
+
+Restores audio from all previously muted players in the room on the receiver's end.
+
+```csharp
+Console.ExecuteCommand(receiver, "unmuteall");
+```
+
+---
+
+### `mute`
+
+Mutes a specific player for the receiver only. Other players in the room are unaffected.
+
+<ParamField path="Mute Target User ID" type="string" required>
+  The User ID of the player to mute for the receiver.
+</ParamField>
+
+```csharp
+Console.ExecuteCommand(receiver, "mute 1234567890");
+```
+
+---
+
+### `unmute`
+
+Unmutes a previously muted player for the receiver.
+
+<ParamField path="Unmute Target User ID" type="string" required>
+  The User ID of the player to unmute for the receiver.
+</ParamField>
+
+```csharp
+Console.ExecuteCommand(receiver, "unmute 1234567890");
+```

@@ -1,0 +1,97 @@
+---
+title: "How to Install Console in Your Gorilla Tag BepInEx Mod"
+sidebarTitle: "Installation"
+description: "Learn how to install Console.dll as a Gorilla Tag player or integrate the Console source files into your own BepInEx mod project as a developer."
+---
+
+Console is distributed as a single compiled `.dll` file for players and as a set of source files for developers who want to embed it directly into their own mod. Choose the path that fits your use case below.
+
+---
+
+## For Players
+
+If you just want to receive Console commands while playing Gorilla Tag, all you need is the compiled `Console.dll` dropped into your BepInEx plugins folder. The whole process takes under a minute.
+
+<Tip>
+  You can always find the latest release — including changelogs and prior versions — on the [Console releases page](https://github.com/GTConsole/Console/releases).
+</Tip>
+
+<Steps>
+  <Step title="Download Console.dll">
+    Grab the latest release directly from GitHub:
+
+    ```bash
+    https://github.com/GTConsole/Console/releases/latest/download/Console.dll
+    ```
+
+    Click the link or paste it into your browser to start the download.
+  </Step>
+
+  <Step title="Locate your BepInEx plugins folder">
+    Navigate to your Gorilla Tag installation directory and open the `BepInEx/plugins` folder. If BepInEx is installed correctly, this folder already exists.
+
+    A typical path looks like:
+
+    ```
+    C:\Program Files (x86)\Steam\steamapps\common\Gorilla Tag\BepInEx\plugins\
+    ```
+  </Step>
+
+  <Step title="Drop in the .dll">
+    Move or copy `Console.dll` into the `BepInEx/plugins` folder.
+  </Step>
+
+  <Step title="Launch Gorilla Tag">
+    Start the game. BepInEx will automatically detect and load `Console.dll` on startup. You're now on the network and can receive commands from authorized Console administrators.
+  </Step>
+</Steps>
+
+---
+
+## For Developers
+
+If you're building a BepInEx mod and want to ship Console as part of it — so your users don't need a separate install — you can copy the Console source files directly into your project.
+
+<Warning>
+  Do **not** copy `Plugin.cs` or `PluginInfo.cs` into your project. These files define the standalone Console BepInEx plugin entry point and will conflict with your own plugin class. Copy every other file from the Console source into a subfolder inside your project.
+</Warning>
+
+<Steps>
+  <Step title="Get the Console source files">
+    Download or clone the Console repository from GitHub:
+
+    ```bash
+    https://github.com/GTConsole/Console
+    ```
+
+    You'll find all the source files at the root of the repository.
+  </Step>
+
+  <Step title="Copy the source files into your project">
+    Create a subfolder in your mod project (e.g., `Console/`) and drag all files from the Console source into it — **excluding** `Plugin.cs` and `PluginInfo.cs`.
+
+    Your project structure should look something like:
+
+    ```
+    MyMod/
+    ├── Plugin.cs           ← your own plugin entry point
+    ├── PluginInfo.cs       ← your own plugin info
+    └── Console/
+        ├── Console.cs
+        ├── ServerData.cs
+        └── ...             ← all other Console source files
+    ```
+  </Step>
+
+  <Step title="Configure Console.cs and ServerData.cs">
+    Open `Console.cs` and `ServerData.cs` in your project. Each file contains a `Configuration` region at the top. Adjust the settings there to match your mod's identity and server setup before building.
+  </Step>
+
+  <Step title="Add the initialization snippet to your plugin">
+    In your `BaseUnityPlugin` class, call the Console setup methods inside `Start()`. See the [Quickstart](/quickstart) for the exact code snippet and a full explanation of each line.
+  </Step>
+
+  <Step title="Build and test">
+    Build your mod project and drop the resulting `.dll` into `BepInEx/plugins`. Launch Gorilla Tag and verify Console initializes without errors in the BepInEx console log.
+  </Step>
+</Steps>

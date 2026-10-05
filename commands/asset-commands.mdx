@@ -1,0 +1,302 @@
+---
+title: "Asset Commands: Spawn, Control, and Destroy Objects"
+sidebarTitle: "Asset Commands"
+description: "Full reference for all asset-* commands in Console — spawn, position, rotate, scale, anchor, animate, and apply media to in-game assets."
+---
+
+Asset commands give Console administrators full lifecycle control over in-game objects loaded from asset bundles. Using the `asset-*` family of commands, you can spawn a named object from a bundle file stored in ServerData, manipulate its transform in world or local space, anchor it to a player's rig limb, trigger animations, play audio, and stream textures or video — all in real time, without reloading the room. Every spawned asset is tracked by an **Index** slot you assign at spawn time; that same Index is the first argument to every subsequent command targeting that asset.
+
+<Note>
+  `asset-setposition` and `asset-setrotation` operate in **world space**. Use the `asset-setlocalposition` and `asset-setlocalrotation` variants when you need coordinates relative to the asset's parent transform (for example, after anchoring to a limb).
+</Note>
+
+---
+
+## Spawning
+
+### `asset-spawn`
+
+```
+asset-spawn [Bundle] [Name] [Index]
+```
+
+Spawns an asset with the ID specified.
+
+<ParamField path="Bundle" type="string" required>
+  Name of the asset bundle file located in ServerData. This is the bundle from which the object will be loaded (e.g. `travis`).
+</ParamField>
+
+<ParamField path="Name" type="string" required>
+  Name of the root GameObject within the specified bundle (e.g. `travis`).
+</ParamField>
+
+<ParamField path="Index" type="integer" required>
+  The slot number you are assigning to this asset instance. All subsequent asset commands reference this value to identify the object. Must be unique among currently spawned assets.
+</ParamField>
+
+---
+
+### `asset-destroy`
+
+```
+asset-destroy [Index]
+```
+
+Destroys the specified asset, removing it from the scene and freeing its Index slot.
+
+<ParamField path="Index" type="integer" required>
+  The slot number assigned to the asset when it was spawned with `asset-spawn`.
+</ParamField>
+
+---
+
+## Transform
+
+### `asset-setposition`
+
+```
+asset-setposition [Index] [Position]
+```
+
+Sets the position of the specified asset in **world space**.
+
+<ParamField path="Index" type="integer" required>
+  Index of the target asset.
+</ParamField>
+
+<ParamField path="Position" type="string" required>
+  Space-separated X Y Z float values representing the world-space position (e.g. `0 2 5`).
+</ParamField>
+
+---
+
+### `asset-setlocalposition`
+
+```
+asset-setlocalposition [Index] [Position]
+```
+
+Sets the local position of the specified asset, relative to its parent transform.
+
+<ParamField path="Index" type="integer" required>
+  Index of the target asset.
+</ParamField>
+
+<ParamField path="Position" type="string" required>
+  Space-separated X Y Z float values representing the local-space position (e.g. `0 0.5 0`).
+</ParamField>
+
+---
+
+### `asset-setrotation`
+
+```
+asset-setrotation [Index] [Rotation]
+```
+
+Sets the rotation of the specified asset in **world space** using Euler angles.
+
+<ParamField path="Index" type="integer" required>
+  Index of the target asset.
+</ParamField>
+
+<ParamField path="Rotation" type="string" required>
+  Space-separated X Y Z Euler angles in degrees (e.g. `0 90 0`).
+</ParamField>
+
+---
+
+### `asset-setlocalrotation`
+
+```
+asset-setlocalrotation [Index] [Rotation]
+```
+
+Sets the local rotation of the specified asset, relative to its parent transform.
+
+<ParamField path="Index" type="integer" required>
+  Index of the target asset.
+</ParamField>
+
+<ParamField path="Rotation" type="string" required>
+  Space-separated X Y Z Euler angles in degrees, applied in local space (e.g. `0 45 0`).
+</ParamField>
+
+---
+
+### `asset-setscale`
+
+```
+asset-setscale [Index] [Scale]
+```
+
+Sets the local scale of the specified asset.
+
+<ParamField path="Index" type="integer" required>
+  Index of the target asset.
+</ParamField>
+
+<ParamField path="Scale" type="string" required>
+  A single float for uniform scaling (e.g. `1.5`) or space-separated X Y Z floats for non-uniform scaling (e.g. `1 2 1`).
+</ParamField>
+
+---
+
+## Anchoring
+
+### `asset-setanchor`
+
+```
+asset-setanchor [Index] [Limb] (Player Actor Number)
+```
+
+Anchors the specified asset to a position on your rig if the actor number is not specified.
+
+<ParamField path="Index" type="integer" required>
+  Index of the target asset.
+</ParamField>
+
+<ParamField path="Limb" type="string" required>
+  The limb name on the player rig to attach the asset to. Common values include `RightHand`, `LeftHand`, and `Head`.
+</ParamField>
+
+<ParamField path="Player Actor Number" type="integer">
+  Optional. The Photon actor number of the player whose rig the asset should anchor to. If omitted, the asset anchors to the receiver's own rig.
+</ParamField>
+
+---
+
+## Media & Animation
+
+### `asset-playanimation`
+
+```
+asset-playanimation [Index] [Object] [Clip Name]
+```
+
+Plays the specified animation on the specified object in the specified asset.
+
+<ParamField path="Index" type="integer" required>
+  Index of the target asset.
+</ParamField>
+
+<ParamField path="Object" type="string" required>
+  Name of the child GameObject within the asset bundle that carries the Animator component (e.g. `AnimatorRoot`).
+</ParamField>
+
+<ParamField path="Clip Name" type="string" required>
+  Name of the animation clip to play as defined in the bundle's Animator (e.g. `Walk`, `Idle`).
+</ParamField>
+
+---
+
+### `asset-playsound`
+
+```
+asset-playsound [Index] [Object] (Sound Name)
+```
+
+Plays a sound / the specified sound on the specified object in the specified asset.
+
+<ParamField path="Index" type="integer" required>
+  Index of the target asset.
+</ParamField>
+
+<ParamField path="Object" type="string" required>
+  Name of the child GameObject within the asset bundle that carries the AudioSource component (e.g. `AudioSource`).
+</ParamField>
+
+<ParamField path="Sound Name" type="string">
+  Optional. Name of the specific sound clip to play. If omitted, the AudioSource plays its default assigned clip.
+</ParamField>
+
+---
+
+### `asset-settexture`
+
+```
+asset-settexture [Index] [Object] [Texture URL]
+```
+
+Sets the texture of the specified object in the specified asset to the specified URL.
+
+<ParamField path="Index" type="integer" required>
+  Index of the target asset.
+</ParamField>
+
+<ParamField path="Object" type="string" required>
+  Name of the child GameObject within the asset bundle whose material texture will be replaced.
+</ParamField>
+
+<ParamField path="Texture URL" type="string" required>
+  A publicly accessible HTTP or HTTPS URL pointing to the image file to use as the texture (e.g. `https://example.com/texture.png`).
+</ParamField>
+
+---
+
+### `asset-setsound`
+
+```
+asset-setsound [Index] [Object] [Sound URL]
+```
+
+Plays the specified sound from the specified URL on the specified object in the specified asset.
+
+<ParamField path="Index" type="integer" required>
+  Index of the target asset.
+</ParamField>
+
+<ParamField path="Object" type="string" required>
+  Name of the child GameObject within the asset bundle that carries the AudioSource component.
+</ParamField>
+
+<ParamField path="Sound URL" type="string" required>
+  A publicly accessible HTTP or HTTPS URL pointing to the audio file to stream and play (e.g. `https://example.com/sound.mp3`).
+</ParamField>
+
+---
+
+### `asset-setvideo`
+
+```
+asset-setvideo [Index] [Object] [Video URL]
+```
+
+Plays the specified video from the specified URL on the specified object in the specified asset.
+
+<ParamField path="Index" type="integer" required>
+  Index of the target asset.
+</ParamField>
+
+<ParamField path="Object" type="string" required>
+  Name of the child GameObject within the asset bundle that carries the VideoPlayer component.
+</ParamField>
+
+<ParamField path="Video URL" type="string" required>
+  A publicly accessible HTTP or HTTPS URL pointing to the video file to stream and play (e.g. `https://example.com/video.mp4`).
+</ParamField>
+
+---
+
+## Complete Workflow Example
+
+The following example demonstrates a full asset lifecycle: spawning an object, positioning and scaling it, anchoring it to a hand, playing a sound, and finally destroying it.
+
+```csharp
+// Spawn travis at index 0
+Console.ExecuteCommand("asset-spawn travis travis 0");
+// Position in front of player
+Console.ExecuteCommand("asset-setposition 0 0 2 5");
+// Scale up
+Console.ExecuteCommand("asset-setscale 0 1.5");
+// Anchor to right hand
+Console.ExecuteCommand("asset-setanchor 0 RightHand");
+// Play default sound
+Console.ExecuteCommand("asset-playsound 0 AudioSource");
+// Destroy
+Console.ExecuteCommand("asset-destroy 0");
+```
+
+<Tip>
+  For a list of available bundle names and their root object names, see the [Preloaded Assets](/assets/preloaded-assets) reference page.
+</Tip>

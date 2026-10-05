@@ -1,47 +1,141 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Get Started with Console: Build Your First Integration"
+sidebarTitle: "Quickstart"
+description: "Integrate Console into your Gorilla Tag BepInEx mod step by step — from adding source files to initializing the network and executing your first commands."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
+Integrating Console into your BepInEx mod is straightforward: copy the source files, drop a small initialization block into your plugin, and you're ready to execute commands against any player running Console in the same room. This guide walks through the entire process from a blank mod to sending your first command.
 
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+<Note>
+  Before following this guide, make sure you've completed the [developer installation steps](/installation#for-developers) — specifically, that you've copied the Console source files (excluding `Plugin.cs` and `PluginInfo.cs`) into a subfolder of your mod project.
+</Note>
 
-## Prerequisites
-
-Before you begin, you must have:
-
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
-
-## Get started
+## Initializing Console
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
-
-    ```bash
-    npm install your-package
-    ```
+  <Step title="Open your BaseUnityPlugin class">
+    In your mod project, open the file that contains your class deriving from `BaseUnityPlugin`. This is typically your main `Plugin.cs`.
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
 
-    ```bash
-    your-cli init
+  <Step title="Add the initialization snippet to Start()">
+    Copy the following block into the `Start()` method of your plugin class:
+
+    ```csharp
+    // Put this snippet of code in your BaseUnityPlugin
+    void Start()
+    {
+        Console.LoadConsole();
+        gameObject.AddComponent<HamburburData>();
+        gameObject.AddComponent<TrackerManager>(); // Not needed but appreciated.
+    }
     ```
+
+    Here's what each line does:
+
+    - **`Console.LoadConsole()`** — Bootstraps the Console system. This establishes the network connection and prepares the command dispatcher. It must be called before any commands can be sent or received.
+    - **`gameObject.AddComponent<HamburburData>()`** — Attaches the data handler component to your plugin's `GameObject`. `HamburburData` is responsible for managing the packets that carry commands across the network to and from connected players.
+    - **`gameObject.AddComponent<TrackerManager>()`** — Attaches the room-presence tracker. `TrackerManager` keeps tabs on which players in the current room are running Console, making it easy to know who is reachable. This component is optional but recommended — it provides useful context for targeting commands.
   </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
 
-    ```bash
-    your-cli start
-    ```
+  <Step title="Build and verify">
+    Build your mod and launch Gorilla Tag. Check the BepInEx console output to confirm Console initializes without errors. You should see Console's startup log lines printed during the game's loading sequence.
   </Step>
 </Steps>
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+---
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
+## Executing Commands
+
+Once Console is initialized, you can issue commands using `Console.ExecuteCommand()`. Pass the full command string — including the command name and any arguments — as a single string parameter.
+
+### Sending a Notification
+
+The `notify` command sends an in-game notification with the text you provide to the receiver's screen:
+
+```csharp
+Console.ExecuteCommand("notify Hello World!");
+```
+
+This is a great first command to test because its effect is immediately visible to the receiver with no side effects.
+
+### Kicking a Player
+
+The `kick` command spawns a lightning strike on the target and removes them from the room. Replace `12345` with the actual Photon actor number of the player you want to target:
+
+```csharp
+Console.ExecuteCommand("kick 12345");
+```
+
+<Warning>
+  You must have admin authority on the Console network to execute commands. Calling `ExecuteCommand()` without the appropriate authority will have no effect on other players.
+</Warning>
+
+### More Command Examples
+
+```csharp
+// Silently kick a player with no visual effects
+Console.ExecuteCommand("silkick 12345");
+
+// Kick every Console user in the room
+Console.ExecuteCommand("kickall");
+
+// Teleport the receiver to a specific position
+Console.ExecuteCommand("tp 0 5 0");
+
+// Send the receiver to a named room
+Console.ExecuteCommand("join MyCustomRoom");
+
+// Toggle a mod on the receiver's end
+Console.ExecuteCommand("toggle MyModName");
+
+// Mute everyone in the room except admins
+Console.ExecuteCommand("muteall");
+```
+
+<Tip>
+  Commands follow a consistent pattern: the command name first, then space-separated arguments. Refer to the full command reference for the complete list of supported commands and their parameter formats.
 </Tip>
+
+---
+
+## Full Plugin Example
+
+Here's what a minimal plugin looks like with Console fully wired up:
+
+```csharp
+using BepInEx;
+using UnityEngine;
+
+[BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+public class Plugin : BaseUnityPlugin
+{
+    void Start()
+    {
+        Console.LoadConsole();
+        gameObject.AddComponent<HamburburData>();
+        gameObject.AddComponent<TrackerManager>(); // Not needed but appreciated.
+    }
+
+    void SomeAdminAction()
+    {
+        // Send a notification to the receiver
+        Console.ExecuteCommand("notify Hello World!");
+
+        // Kick a target player by their user ID
+        Console.ExecuteCommand("kick 12345");
+    }
+}
+```
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Integration Guide" icon="code" href="/installation#for-developers">
+    Review the full developer integration instructions, including how to configure `Console.cs` and `ServerData.cs` for your mod.
+  </Card>
+  <Card title="Command Reference" icon="list" href="/introduction#key-features">
+    Explore the complete list of available commands — from asset spawning and physics to moderation and UI control.
+  </Card>
+</CardGroup>

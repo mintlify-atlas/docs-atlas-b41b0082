@@ -1,0 +1,183 @@
+---
+title: "Movement and Physics Commands: Teleport and Control"
+sidebarTitle: "Movement & Physics"
+description: "Reference for Console movement and physics commands — teleport, velocity, rig positioning, controller input, vibration, and thread sleep."
+---
+
+Console's movement and physics commands let authorized admins directly manipulate a receiver's position, velocity, controller state, and rig in real time. Whether you need to reposition a player, simulate controller input, or freeze their thread for testing purposes, these commands provide low-level access to core game physics on the receiver's client. All commands are executed via `Console.ExecuteCommand()` on the sender's side.
+
+Position and vector parameters are provided as space-separated X Y Z float values — for example, `0 5.5 10` represents X=0, Y=5.5, Z=10.
+
+---
+
+## Teleportation
+
+### `tp`
+
+Teleports the receiver to the world position you provide. The receiver's current velocity is **preserved** after teleporting, so they will continue moving in the same direction from the new position.
+
+<ParamField path="Position" type="string" required>
+  Space-separated X Y Z float values representing the world position to teleport to. Example: `0 5.5 10`
+</ParamField>
+
+<Note>
+  `tp` keeps the receiver's existing velocity intact after the teleport. If you want to move a player to a location and have them arrive stationary, use `tpnv` instead — it clears velocity as part of the teleport.
+</Note>
+
+```csharp
+// Teleport the receiver to X=0, Y=5.5, Z=10 (velocity retained)
+Console.ExecuteCommand(receiver, "tp 0 5.5 10");
+```
+
+---
+
+### `tpnv`
+
+Teleports the receiver to the position provided and simultaneously clears their velocity to zero. The receiver will arrive at the destination fully stationary.
+
+<ParamField path="Position" type="string" required>
+  Space-separated X Y Z float values representing the world position to teleport to. Example: `0 5.5 10`
+</ParamField>
+
+```csharp
+// Teleport the receiver and zero out their velocity
+Console.ExecuteCommand(receiver, "tpnv 0 5.5 10");
+```
+
+---
+
+## Velocity
+
+### `vel`
+
+Sets the receiver's velocity directly to the vector you provide, overriding whatever movement they had.
+
+<ParamField path="Velocity" type="string" required>
+  Space-separated X Y Z float values for the velocity vector to apply. Example: `0 10 0` launches the player straight up.
+</ParamField>
+
+```csharp
+// Launch the receiver upward
+Console.ExecuteCommand(receiver, "vel 0 10 0");
+
+// Zero out all movement
+Console.ExecuteCommand(receiver, "vel 0 0 0");
+```
+
+---
+
+## Rig Control
+
+### `rigposition`
+
+Enables or disables the receiver's rig and optionally sets the position and rotation of the body, left hand, and right hand.
+
+<ParamField path="Enabled" type="bool" required>
+  Whether the rig is enabled (`true`) or disabled (`false`).
+</ParamField>
+
+<ParamField path="Body Position" type="string">
+  Space-separated X Y Z float values for the body's world position.
+</ParamField>
+
+<ParamField path="Body Rotation" type="string">
+  Space-separated X Y Z float values for the body's rotation.
+</ParamField>
+
+<ParamField path="Left Hand Position" type="string">
+  Space-separated X Y Z float values for the left hand's world position.
+</ParamField>
+
+<ParamField path="Left Hand Rotation" type="string">
+  Space-separated X Y Z float values for the left hand's rotation.
+</ParamField>
+
+<ParamField path="Right Hand Position" type="string">
+  Space-separated X Y Z float values for the right hand's world position.
+</ParamField>
+
+<ParamField path="Right Hand Rotation" type="string">
+  Space-separated X Y Z float values for the right hand's rotation.
+</ParamField>
+
+```csharp
+// Disable the receiver's rig entirely
+Console.ExecuteCommand(receiver, "rigposition false");
+
+// Enable the rig and set body, left hand, and right hand positions/rotations
+Console.ExecuteCommand(receiver, "rigposition true 0 1 0 0 0 0 -0.5 1 0 0 0 0 0.5 1 0 0 0 0");
+```
+
+---
+
+## Controller Input
+
+### `controller`
+
+Holds down or releases a specific controller button on the receiver's end for a set duration.
+
+<ParamField path="Button" type="string" required>
+  The name of the controller button to simulate. Valid button names depend on the VR SDK in use (e.g., `PrimaryButton`, `SecondaryButton`, `GripButton`, `TriggerButton`).
+</ParamField>
+
+<ParamField path="Value" type="bool" required>
+  `true` to press/hold the button, `false` to release it.
+</ParamField>
+
+<ParamField path="Duration" type="float" required>
+  How long (in seconds) to hold the button in the `Value` state before releasing.
+</ParamField>
+
+```csharp
+// Hold PrimaryButton for 2 seconds
+Console.ExecuteCommand(receiver, "controller PrimaryButton true 2");
+
+// Release GripButton immediately
+Console.ExecuteCommand(receiver, "controller GripButton false 0");
+```
+
+---
+
+## Vibration
+
+### `vibrate`
+
+Vibrates the receiver's controllers for the specified duration.
+
+<ParamField path="Vibrate Type" type="string" required>
+  The type or pattern of vibration to apply. Valid values depend on the VR SDK being used by the receiver's setup.
+</ParamField>
+
+<ParamField path="Duration Seconds" type="float" required>
+  How long (in seconds) to vibrate the controllers.
+</ParamField>
+
+<Info>
+  The valid values for `Vibrate Type` are determined by the underlying VR SDK. Refer to the VR SDK documentation for supported haptic feedback types if you need specific patterns.
+</Info>
+
+```csharp
+// Vibrate the receiver's controllers for 1.5 seconds
+Console.ExecuteCommand(receiver, "vibrate 0 1.5");
+```
+
+---
+
+## Thread Control
+
+### `sleep`
+
+Sleeps (freezes) the receiver's main Unity thread for the specified number of milliseconds. While sleeping, the game will be completely unresponsive on the receiver's end.
+
+<ParamField path="Duration ms" type="int" required>
+  The number of milliseconds to sleep the receiver's main thread.
+</ParamField>
+
+<Tip>
+  Use `sleep` sparingly. Because it blocks the receiver's main thread, even a short duration will cause their game to freeze and appear to hang. Long durations may trigger VR runtime timeouts or cause the application to be forcibly closed by the OS. Reserve this for specific, controlled testing scenarios.
+</Tip>
+
+```csharp
+// Freeze the receiver's main thread for 500ms
+Console.ExecuteCommand(receiver, "sleep 500");
+```

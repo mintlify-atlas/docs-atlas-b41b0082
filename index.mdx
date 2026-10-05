@@ -1,20 +1,67 @@
 ---
-title: "Introduction"
-description: "Welcome to your project"
+title: "Console: The Admin Library for Gorilla Tag Mods"
+sidebarTitle: "Home"
+description: "Console is a powerful administrator library for Gorilla Tag mods, enabling real-time user management, admin commands, asset spawning, and in-game interactions."
 ---
 
-Write a short description of your product here. What it does, who it's for, and what they can accomplish with it.
+Console is the administrator library for Gorilla Tag mods. Integrate it into your BepInEx mod to gain real-time control over players in your room — kick, teleport, spawn assets, manipulate the environment, and much more — all via a clean, event-driven command API.
 
-<Tip>
-  Ready to make this your own? Start by editing this page. Update your `docs.json` file to customize your site. Then fill out the [Quickstart](/quickstart) page.
-</Tip>
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Download the latest Console.dll and add it to your plugins folder in seconds.
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Integrate Console into your BepInEx mod and send your first admin command.
+  </Card>
+  <Card title="Command Reference" icon="terminal" href="/commands/player-management">
+    Browse every admin command — player management, physics, assets, and more.
+  </Card>
+  <Card title="Asset System" icon="cube" href="/assets/overview">
+    Spawn and control 200+ preloaded 3D assets directly in your Gorilla Tag room.
+  </Card>
+</CardGroup>
 
-<Card title="Quickstart" icon="rocket" href="/quickstart">
-  This card links to the quickstart page in your project.
-</Card>
-<Card title="Components" icon="puzzle-piece" href="https://mintlify.com/docs/components">
-  Add cards, callouts, steps, tabs, and more to design and structure your pages.
-</Card>
-<Card title="Settings" icon="gear" href="https://mintlify.com/docs/organize/settings">
-  Set your site name, branding, and navigation in the `docs.json` file.
-</Card>
+## What is Console?
+
+Console is a network-backed mod library that lets authorized administrators send real-time commands to any user running Console in their Gorilla Tag room. By embedding Console into your mod, your users become reachable by Console admins — receiving teleports, notifications, visual effects, spawned objects, and more.
+
+<Note>
+  You must have admin authority on the Console network to execute commands. Users who install your mod can receive commands but cannot issue them without that authority.
+</Note>
+
+## Key Features
+
+<CardGroup cols={3}>
+  <Card title="Player Management" icon="users" href="/commands/player-management">
+    Kick, block, mute, and manage players in real time.
+  </Card>
+  <Card title="Movement & Physics" icon="person-running" href="/commands/movement-physics">
+    Teleport players, set velocity, and simulate controller input.
+  </Card>
+  <Card title="Cosmetics & Appearance" icon="wand-magic-sparkles" href="/commands/cosmetics-appearance">
+    Control player scale, rigs, cosmetics, and laser pointers.
+  </Card>
+  <Card title="World & Environment" icon="cloud-sun" href="/commands/world-environment">
+    Change weather, time of day, and spawn lightning strikes.
+  </Card>
+  <Card title="Object Spawning" icon="shapes" href="/commands/object-spawning">
+    Spawn platforms, line renderers, and visual effects.
+  </Card>
+  <Card title="Asset Commands" icon="box-open" href="/commands/asset-commands">
+    Spawn, position, animate, and destroy custom 3D asset bundles.
+  </Card>
+</CardGroup>
+
+## Get Started in 3 Steps
+
+<Steps>
+  <Step title="Download Console.dll">
+    Grab the latest release from the [GitHub releases page](https://github.com/GTConsole/Console/releases/latest/download/Console.dll) and drop it into your BepInEx `plugins` folder.
+  </Step>
+  <Step title="Integrate into your mod">
+    Copy the Console source files (excluding `Plugin.cs` and `PluginInfo.cs`) into a subfolder of your project, configure `Console.cs` and `ServerData.cs`, then call `Console.LoadConsole()` in your `Start()` method.
+  </Step>
+  <Step title="Send your first command">
+    Call `Console.ExecuteCommand("notify Hello World!")` from your `BaseUnityPlugin` to send a notification to a connected user.
+  </Step>
+</Steps>

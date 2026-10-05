@@ -1,0 +1,75 @@
+---
+title: "Console Asset System: Spawn 3D Objects In-Game"
+sidebarTitle: "Overview"
+description: "Learn how Console's Unity AssetBundle system works — spawn, transform, anchor, animate, and destroy 3D objects in Gorilla Tag rooms on demand."
+---
+
+Console ships with over 200 preloaded Unity AssetBundle files that administrators can spawn into any Gorilla Tag room in real time. Each bundle contains one or more named 3D objects — characters, weapons, maps, effects, and props — that are loaded from the `ServerData/` directory and instantiated on the receiver's client the moment the command is sent. Because assets are referenced by a caller-assigned index number, you can manage multiple independent objects simultaneously without naming conflicts, and chain transform, animation, audio, and texture commands against them throughout their lifetime.
+
+## How Assets Are Referenced
+
+Every asset operation uses three identifiers that work together:
+
+| Identifier | Type | Purpose |
+|---|---|---|
+| `Bundle` | string | The exact filename from the `ServerData/` directory (e.g. `travis`, `zeldasword`) |
+| `Name` | string | The name of the specific GameObject inside the bundle to instantiate |
+| `Index` | integer | A slot number you assign at spawn time, used in all subsequent commands to target that object |
+
+The `Index` is entirely caller-controlled — you choose `0`, `1`, `2`, or any integer. This lets you track multiple spawned assets independently. If you spawn a second asset with an index already in use, the previous object at that slot is replaced.
+
+## Asset Lifecycle
+
+<Steps>
+  <Step title="Spawn">
+    Use `asset-spawn [Bundle] [Name] [Index]` to load the AssetBundle from `ServerData/` and instantiate the named object on the receiver's client. The object appears at the world origin by default.
+  </Step>
+  <Step title="Position, Rotate, and Scale">
+    After spawning, use `asset-setposition`, `asset-setrotation`, and `asset-setscale` (or their local-space variants) to place the asset exactly where you want it in the scene. Position and rotation values are space-separated X Y Z floats.
+  </Step>
+  <Step title="Anchor to a Rig">
+    Call `asset-setanchor [Index] [Limb]` to parent the asset to a body part — such as `RightHand`, `LeftHand`, or `Head` — so it follows the player's movements. You can optionally specify another player's actor number to anchor to their rig instead.
+  </Step>
+  <Step title="Animate, Play Sounds, and Set Textures">
+    Bring the asset to life with `asset-playanimation` to trigger a named animation clip, `asset-playsound` or `asset-setsound` to play audio (from the bundle or a remote URL), `asset-settexture` to swap a material's texture from a URL, and `asset-setvideo` to stream video onto a surface.
+  </Step>
+  <Step title="Destroy">
+    When you are finished with an asset, call `asset-destroy [Index]` to remove it from the scene and free the slot for reuse.
+  </Step>
+</Steps>
+
+## Quick-Start Example
+
+The snippet below shows a complete asset session — spawning the `travis` character, placing and scaling it, anchoring it to the right hand, then cleaning up.
+
+```csharp
+// Spawn the "travis" object from the "travis" bundle at index 0
+Console.ExecuteCommand("asset-spawn travis travis 0");
+
+// Move it to world position X=0, Y=2, Z=5
+Console.ExecuteCommand("asset-setposition 0 0 2 5");
+
+// Scale it to 1.5× uniform
+Console.ExecuteCommand("asset-setscale 0 1.5");
+
+// Anchor it to the receiver's right hand so it follows movement
+Console.ExecuteCommand("asset-setanchor 0 RightHand");
+
+// Remove the asset when done
+Console.ExecuteCommand("asset-destroy 0");
+```
+
+<Note>
+  Assets spawned with `asset-spawn` are **local to the receiver's client**. The object is only visible to the player who received the command — it is not networked to other players in the room unless you send the same command to each of them individually.
+</Note>
+
+## Explore Further
+
+<CardGroup cols={2}>
+  <Card title="Preloaded Assets" icon="box-archive" href="/assets/preloaded-assets">
+    Browse the full catalog of 200+ bundled characters, weapons, maps, effects, and props shipped in the ServerData directory.
+  </Card>
+  <Card title="Asset Management Commands" icon="terminal" href="/assets/asset-management">
+    Full parameter reference for every asset command: spawn, transform, anchor, animate, audio, texture, video, and destroy.
+  </Card>
+</CardGroup>

@@ -1,0 +1,318 @@
+---
+title: "Asset Management Commands: Spawn, Move, and Destroy"
+sidebarTitle: "Asset Management"
+description: "Full parameter reference for every Console asset command: spawn, transform, anchor, animate, play audio, set textures and video, and destroy objects."
+---
+
+Console exposes a set of `asset-*` commands that cover every stage of a spawned object's life: creation, spatial transformation, rig anchoring, animation playback, audio and texture overrides, video streaming, and teardown. Every command targets an asset by the integer `Index` you assigned when you spawned it, so you can control multiple independent objects in the same room without ambiguity. The reference below documents each command's parameters in full, followed by a complete worked example.
+
+<Note>
+  **Position and Rotation format:** All position and rotation values are passed as three space-separated floats representing X, Y, and Z respectively. For example, to set a position of X=1, Y=2.5, Z=−3 you would write `1 2.5 -3`. Scale accepts either a single uniform float or three space-separated floats for non-uniform scaling.
+</Note>
+
+---
+
+## asset-spawn
+
+Loads the named AssetBundle from the `ServerData/` directory and instantiates the specified object on the receiver's client, registering it at the given index slot.
+
+<ParamField path="Bundle" type="string" required>
+  The exact filename of the AssetBundle in the `ServerData/` directory. Must match the filename character-for-character, including any spaces (e.g. `travis`, `zeldasword`, `skibidi toilet`).
+</ParamField>
+
+<ParamField path="Name" type="string" required>
+  The name of the specific GameObject inside the bundle to instantiate. This is the internal Unity object name stored within the bundle, not the bundle filename itself.
+</ParamField>
+
+<ParamField path="Index" type="integer" required>
+  A caller-assigned integer slot (e.g. `0`, `1`, `2`) used to reference this spawned asset in all subsequent commands. Spawning a second asset with an index already in use replaces the previous object at that slot.
+</ParamField>
+
+```csharp
+Console.ExecuteCommand("asset-spawn travis travis 0");
+```
+
+---
+
+## asset-destroy
+
+Destroys the spawned asset registered at the specified index and frees that slot for reuse.
+
+<ParamField path="Index" type="integer" required>
+  The index slot of the asset to remove from the scene.
+</ParamField>
+
+```csharp
+Console.ExecuteCommand("asset-destroy 0");
+```
+
+---
+
+## asset-setposition
+
+Sets the **world-space** position of the asset at the given index.
+
+<ParamField path="Index" type="integer" required>
+  The index slot of the target asset.
+</ParamField>
+
+<ParamField path="Position" type="float float float" required>
+  Three space-separated floats representing the X, Y, and Z world-space coordinates to place the asset at.
+</ParamField>
+
+```csharp
+// Move asset 0 to world position (0, 2, 5)
+Console.ExecuteCommand("asset-setposition 0 0 2 5");
+```
+
+---
+
+## asset-setlocalposition
+
+Sets the **local-space** position of the asset relative to its parent transform. Useful when the asset is already anchored to a rig and you want to offset it from the anchor point.
+
+<ParamField path="Index" type="integer" required>
+  The index slot of the target asset.
+</ParamField>
+
+<ParamField path="Position" type="float float float" required>
+  Three space-separated floats representing the X, Y, and Z local-space offset from the parent transform.
+</ParamField>
+
+```csharp
+// Offset asset 1 by (0, 0.3, 0.1) relative to its parent
+Console.ExecuteCommand("asset-setlocalposition 1 0 0.3 0.1");
+```
+
+---
+
+## asset-setrotation
+
+Sets the **world-space** rotation of the asset using Euler angles.
+
+<ParamField path="Index" type="integer" required>
+  The index slot of the target asset.
+</ParamField>
+
+<ParamField path="Rotation" type="float float float" required>
+  Three space-separated floats representing X, Y, and Z Euler angles (in degrees) for the world-space rotation.
+</ParamField>
+
+```csharp
+// Rotate asset 0 to face 90° on the Y axis
+Console.ExecuteCommand("asset-setrotation 0 0 90 0");
+```
+
+---
+
+## asset-setlocalrotation
+
+Sets the **local-space** rotation of the asset relative to its parent transform using Euler angles.
+
+<ParamField path="Index" type="integer" required>
+  The index slot of the target asset.
+</ParamField>
+
+<ParamField path="Rotation" type="float float float" required>
+  Three space-separated floats representing X, Y, and Z Euler angles (in degrees) relative to the parent transform.
+</ParamField>
+
+```csharp
+Console.ExecuteCommand("asset-setlocalrotation 0 0 45 0");
+```
+
+---
+
+## asset-setscale
+
+Sets the **local scale** of the asset. Accepts a single uniform float or three space-separated floats for non-uniform scaling.
+
+<ParamField path="Index" type="integer" required>
+  The index slot of the target asset.
+</ParamField>
+
+<ParamField path="Scale" type="float" required>
+  A single float for uniform scale (e.g. `1.5` makes the asset 1.5× its default size in all axes). Use three space-separated floats for non-uniform scale.
+</ParamField>
+
+```csharp
+// Scale asset 0 to 1.5× uniform size
+Console.ExecuteCommand("asset-setscale 0 1.5");
+
+// Non-uniform: stretch on Y only
+Console.ExecuteCommand("asset-setscale 0 1 2 1");
+```
+
+---
+
+## asset-setanchor
+
+Parents the asset to a specific limb on a player's rig so it follows that body part as the player moves. If no actor number is provided the asset anchors to the receiver's own rig.
+
+<ParamField path="Index" type="integer" required>
+  The index slot of the target asset.
+</ParamField>
+
+<ParamField path="Limb" type="string" required>
+  The name of the rig attachment point. Common values include `RightHand`, `LeftHand`, `Head`, `Body`, `RightLowerArm`, and `LeftLowerArm`.
+</ParamField>
+
+<ParamField path="Player Actor Number" type="integer">
+  Optional. The Photon actor number of another player in the room. When omitted, the asset anchors to the receiver's own rig.
+</ParamField>
+
+```csharp
+// Anchor asset 0 to the receiver's right hand
+Console.ExecuteCommand("asset-setanchor 0 RightHand");
+
+// Anchor asset 1 to another player's head (actor number 3)
+Console.ExecuteCommand("asset-setanchor 1 Head 3");
+```
+
+---
+
+## asset-playanimation
+
+Triggers a named animation clip on a specific GameObject within the spawned asset.
+
+<ParamField path="Index" type="integer" required>
+  The index slot of the target asset.
+</ParamField>
+
+<ParamField path="Object" type="string" required>
+  The name of the child GameObject inside the asset that has an Animator or Animation component.
+</ParamField>
+
+<ParamField path="Clip Name" type="string" required>
+  The name of the animation clip to play, as defined inside the bundle's Animator controller.
+</ParamField>
+
+```csharp
+Console.ExecuteCommand("asset-playanimation 0 travis Dance");
+```
+
+---
+
+## asset-playsound
+
+Plays a sound on a specific AudioSource component within the spawned asset. If a sound name is provided it plays that specific clip; otherwise it plays whatever audio clip is already loaded on the AudioSource.
+
+<ParamField path="Index" type="integer" required>
+  The index slot of the target asset.
+</ParamField>
+
+<ParamField path="Object" type="string" required>
+  The name of the child GameObject inside the asset that contains an AudioSource component.
+</ParamField>
+
+<ParamField path="Sound Name" type="string">
+  Optional. The name of a specific audio clip within the bundle to play. When omitted, the default clip on the AudioSource is used.
+</ParamField>
+
+```csharp
+// Play the default sound on the jukebox object
+Console.ExecuteCommand("asset-playsound 0 jukebox");
+
+// Play a specific named clip
+Console.ExecuteCommand("asset-playsound 0 jukebox TrackA");
+```
+
+---
+
+## asset-settexture
+
+Downloads an image from the given URL and applies it as the main texture on the renderer of the specified child object.
+
+<ParamField path="Index" type="integer" required>
+  The index slot of the target asset.
+</ParamField>
+
+<ParamField path="Object" type="string" required>
+  The name of the child GameObject inside the asset whose material texture will be replaced.
+</ParamField>
+
+<ParamField path="Texture URL" type="string" required>
+  A publicly accessible HTTPS URL pointing to the image file (PNG or JPG) to use as the new texture.
+</ParamField>
+
+```csharp
+Console.ExecuteCommand("asset-settexture 0 cube https://example.com/textures/wood.png");
+```
+
+<Warning>
+  The texture URL must be publicly reachable from the receiver's machine. Private, localhost, or LAN URLs will silently fail to load.
+</Warning>
+
+---
+
+## asset-setsound
+
+Downloads an audio file from the given URL and plays it on the AudioSource of the specified child object.
+
+<ParamField path="Index" type="integer" required>
+  The index slot of the target asset.
+</ParamField>
+
+<ParamField path="Object" type="string" required>
+  The name of the child GameObject inside the asset that has an AudioSource component.
+</ParamField>
+
+<ParamField path="Sound URL" type="string" required>
+  A publicly accessible HTTPS URL pointing to the audio file to stream and play.
+</ParamField>
+
+```csharp
+Console.ExecuteCommand("asset-setsound 0 jukebox https://example.com/audio/track.mp3");
+```
+
+---
+
+## asset-setvideo
+
+Downloads and plays a video from the given URL on a VideoPlayer component attached to the specified child object, rendering it onto that object's surface.
+
+<ParamField path="Index" type="integer" required>
+  The index slot of the target asset.
+</ParamField>
+
+<ParamField path="Object" type="string" required>
+  The name of the child GameObject inside the asset that has a VideoPlayer component and a render surface.
+</ParamField>
+
+<ParamField path="Video URL" type="string" required>
+  A publicly accessible HTTPS URL pointing to the video file to stream (e.g. an MP4).
+</ParamField>
+
+```csharp
+Console.ExecuteCommand("asset-setvideo 0 screen https://example.com/video/clip.mp4");
+```
+
+---
+
+## Complete Usage Example
+
+The example below walks through a full asset session: spawning a character, repositioning and scaling it, anchoring it to the player's hand, and finally cleaning it up.
+
+```csharp
+// 1. Spawn the "travis" object from the "travis" bundle, assign it index 0
+Console.ExecuteCommand("asset-spawn travis travis 0");
+
+// 2. Move it to world position (0, 2, 5)
+Console.ExecuteCommand("asset-setposition 0 0 2 5");
+
+// 3. Scale it to 1.5× uniform size
+Console.ExecuteCommand("asset-setscale 0 1.5");
+
+// 4. Anchor it to the receiver's right hand so it follows their movement
+Console.ExecuteCommand("asset-setanchor 0 RightHand");
+
+// 5. Play an animation clip named "Dance" on the root object
+Console.ExecuteCommand("asset-playanimation 0 travis Dance");
+
+// 6. Destroy the asset when the session is over
+Console.ExecuteCommand("asset-destroy 0");
+```
+
+<Tip>
+  You can manage multiple assets at the same time by using different index numbers. Spawn a weapon at index `0`, an effect at index `1`, and a map at index `2` — then control each independently with their respective index in any `asset-*` command.
+</Tip>

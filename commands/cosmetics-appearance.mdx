@@ -1,0 +1,115 @@
+---
+title: "Cosmetics and Appearance Commands for Console Admins"
+sidebarTitle: "Cosmetics"
+description: "Reference for Console cosmetics and appearance commands — player scale, cosmetic unlocks, laser hands, lightning strikes, and cone visibility."
+---
+
+Console's cosmetics and appearance commands let authorized admins modify how a receiver looks and interacts visually within the game world. From adjusting player scale and equipping cosmetics to spawning lasers and lightning strikes, these commands affect the receiver's visual presentation on their own client. All commands are executed via `Console.ExecuteCommand()` on the sender's side and take effect on the receiver's end in real time.
+
+---
+
+## Scale
+
+### `scale`
+
+Sets the physical scale of the receiver's player rig to the float value you provide. The scale applies to their own client view.
+
+<ParamField path="Scale Value" type="float" required>
+  The scale multiplier to apply to the receiver's rig. `1.0` is the normal default size, `2.0` is double size, `0.5` is half size, and so on.
+</ParamField>
+
+```csharp
+// Set the receiver to normal size
+Console.ExecuteCommand(receiver, "scale 1.0");
+
+// Double the receiver's size
+Console.ExecuteCommand(receiver, "scale 2.0");
+
+// Shrink the receiver to half size
+Console.ExecuteCommand(receiver, "scale 0.5");
+```
+
+---
+
+## Cosmetics
+
+### `cosmetic`
+
+Adds a cosmetic item to the list of cosmetics the receiver's rig is allowed to display, identified by its Cosmetic ID.
+
+<ParamField path="Cosmetic ID" type="string" required>
+  The ID of the cosmetic to add to the receiver's allowed cosmetics list.
+</ParamField>
+
+<Note>
+  `cosmetic` **adds** the specified item to the receiver's allowed cosmetics list — it does not replace the existing list. If you send multiple `cosmetic` commands, each new cosmetic is appended rather than overwriting previously added ones.
+</Note>
+
+```csharp
+// Add a specific cosmetic to the receiver's allowed list
+Console.ExecuteCommand(receiver, "cosmetic face.bowtache");
+```
+
+---
+
+## Laser
+
+### `laser`
+
+Spawns a red laser on the receiver's hand that faces down the palm. You control both whether the laser is visible and which hand it appears on.
+
+<ParamField path="Show Laser" type="bool" required>
+  `true` to show the laser on the receiver's hand, `false` to hide it.
+</ParamField>
+
+<ParamField path="Right Hand" type="bool" required>
+  `true` to place the laser on the receiver's right hand, `false` to place it on the left hand.
+</ParamField>
+
+```csharp
+// Show a laser on the receiver's right hand
+Console.ExecuteCommand(receiver, "laser true true");
+
+// Show a laser on the receiver's left hand
+Console.ExecuteCommand(receiver, "laser true false");
+
+// Hide the laser
+Console.ExecuteCommand(receiver, "laser false true");
+```
+
+---
+
+## Lightning
+
+### `strike`
+
+Strikes a lightning bolt at the world position you specify on the receiver's end.
+
+<ParamField path="Position" type="string" required>
+  Space-separated X Y Z float values representing the world position where the lightning strike should appear. Example: `0 0 0`
+</ParamField>
+
+```csharp
+// Strike lightning at the world origin
+Console.ExecuteCommand(receiver, "strike 0 0 0");
+
+// Strike lightning at a specific elevated position
+Console.ExecuteCommand(receiver, "strike 3.5 2.0 -1.5");
+```
+
+---
+
+## Visibility
+
+### `nocone`
+
+Disables the visual indicator on the receiver's end that shows they have Console installed. Once sent, other players (and the receiver themselves) will no longer see the Console cone marker above their rig.
+
+<Tip>
+  `nocone` is especially useful for admins who want to monitor or moderate a room discreetly. By sending this command to yourself (as the receiver), you can operate without other players knowing you are running Console.
+</Tip>
+
+```csharp
+// Disable the Console cone indicator for the receiver
+Console.ExecuteCommand(receiver, "nocone");
+```

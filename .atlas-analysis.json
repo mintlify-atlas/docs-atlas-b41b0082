@@ -1,0 +1,133 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "Console",
+  "projectDescription": "Console is an administrator library for Gorilla Tag mods that enables real-time user management, admin commands, asset spawning, and in-game interactions.",
+  "theme": "luma",
+  "primaryColor": "#70d48c",
+  "lightColor": "#0a0a0c",
+  "darkColor": "#a983a8",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Integration Guide",
+            "pages": [
+              "integration/setup",
+              "integration/configuration",
+              "integration/events"
+            ]
+          },
+          {
+            "group": "Asset System",
+            "pages": [
+              "assets/overview",
+              "assets/preloaded-assets",
+              "assets/asset-management"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Command Reference",
+        "groups": [
+          {
+            "group": "Player Commands",
+            "pages": [
+              "commands/player-management",
+              "commands/movement-physics",
+              "commands/cosmetics-appearance"
+            ]
+          },
+          {
+            "group": "World & Object Commands",
+            "pages": [
+              "commands/world-environment",
+              "commands/object-spawning",
+              "commands/asset-commands"
+            ]
+          },
+          {
+            "group": "Utility Commands",
+            "pages": [
+              "commands/discovery-utility",
+              "commands/lua-scripting"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Easy integration into any Gorilla Tag BepInEx mod",
+    "Real-time admin commands for player management",
+    "Asset spawning and management system with 200+ preloaded assets",
+    "Player teleportation, physics, and cosmetics control",
+    "World and environment manipulation (weather, time, lighting)",
+    "Lua scripting support via SafeLua",
+    "Mod toggling and menu control",
+    "Mute/unmute player management",
+    "Controller input simulation",
+    "Line renderer and platform spawning"
+  ],
+  "publicApiSurface": [
+    "Console.LoadConsole()",
+    "Console.ExecuteCommand(command, params)",
+    "HamburburData component",
+    "TrackerManager component",
+    "kick [User ID]",
+    "silkick [User ID]",
+    "kickall",
+    "crash",
+    "block",
+    "join [Room Name]",
+    "isusing",
+    "nocone",
+    "exec-safe [Script Name]",
+    "forceenable [Mod Name] [Value]",
+    "toggle [Mod Name]",
+    "togglemenu [Toggle]",
+    "notify [Notification]",
+    "sleep [Duration ms]",
+    "weather [Raining]",
+    "time [Time]",
+    "rigposition [Enabled] [Body] [Left Hand] [Right Hand]",
+    "vibrate [Type] [Duration]",
+    "tp [Position]",
+    "tpnv [Position]",
+    "vel [Velocity]",
+    "controller [Button] [Value] [Duration]",
+    "scale [Value]",
+    "cosmetic [ID]",
+    "muteall",
+    "unmuteall",
+    "mute [User ID]",
+    "unmute [User ID]",
+    "laser [Show] [Right Hand]",
+    "strike [Position]",
+    "platf [Position] [Scale] [Rotation] [Color]",
+    "lr [Color] [Width] [Start] [End] [Time]",
+    "asset-spawn [Bundle] [Name] [Index]",
+    "asset-destroy [Index]",
+    "asset-setposition [Index] [Position]",
+    "asset-setlocalposition [Index] [Position]",
+    "asset-setrotation [Index] [Rotation]",
+    "asset-setlocalrotation [Index] [Rotation]",
+    "asset-setscale [Index] [Scale]",
+    "asset-setanchor [Index] [Limb] [Actor]",
+    "asset-playanimation [Index] [Object] [Clip]",
+    "asset-playsound [Index] [Object] [Sound]",
+    "asset-settexture [Index] [Object] [URL]",
+    "asset-setsound [Index] [Object] [URL]",
+    "asset-setvideo [Index] [Object] [URL]"
+  ]
+}

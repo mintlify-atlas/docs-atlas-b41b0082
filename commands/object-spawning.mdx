@@ -1,0 +1,186 @@
+---
+title: "Spawn Platforms and Line Renderers in Gorilla Tag"
+sidebarTitle: "Object Spawning"
+description: "Spawn colored cube platforms and temporary line renderers at precise world positions on a receiver's client using Console's object spawning commands."
+---
+
+Console's object spawning commands give administrators the ability to materialize geometric objects directly into a receiver's game world. The `platf` command drops a colored cube platform at any position, scale, and rotation you define, while the `lr` command draws a line between two points in world space and automatically destroys it after a configurable number of seconds. Both commands run entirely on the receiver's client — no other players in the room are affected.
+
+<Note>
+  Object spawning commands execute on the receiver's end only. Spawned platforms and line renderers are visible solely to the player you target, not to the wider room.
+</Note>
+
+---
+
+## platf
+
+Spawns a cube at the position, scale, rotation, and with the color you provide on the receiver's end.
+
+The `platf` command creates a solid cube platform in the receiver's world. You control exactly where it appears, how large it is, its orientation in 3D space, and its RGBA color — including transparency. All positional and rotational values are supplied as space-separated floats in a single command string.
+
+<Tip>
+  Set the Alpha (`Color A`) value below `1.0` to create semi-transparent platforms. Values like `0.4` produce a ghostly, subtle effect that can serve as visual guides or decorative overlays without obstructing the player's view.
+</Tip>
+
+### Parameters
+
+<ParamField path="Position" type="float float float" required>
+  World-space coordinates for the center of the cube, supplied as three space-separated floats: **X Y Z**.
+</ParamField>
+
+<ParamField path="Scale" type="float" required>
+  Uniform scale of the cube. A value of `1` produces a standard unit cube; `3` makes it three times larger in all dimensions.
+</ParamField>
+
+<ParamField path="Vector Rotation" type="float float float" required>
+  Euler rotation angles in degrees, supplied as three space-separated floats: **X Y Z**. Use `0 0 0` for no rotation.
+</ParamField>
+
+<ParamField path="Color R" type="float" required>
+  Red channel of the cube's color. Range: `0.0` (no red) to `1.0` (full red).
+</ParamField>
+
+<ParamField path="Color G" type="float" required>
+  Green channel of the cube's color. Range: `0.0` (no green) to `1.0` (full green).
+</ParamField>
+
+<ParamField path="Color B" type="float" required>
+  Blue channel of the cube's color. Range: `0.0` (no blue) to `1.0` (full blue).
+</ParamField>
+
+<ParamField path="Color A" type="float" required>
+  Alpha (opacity) channel of the cube's color. Range: `0.0` (fully transparent) to `1.0` (fully opaque).
+</ParamField>
+
+### Command format
+
+```
+platf [X Y Z] [Scale] [Rot X Rot Y Rot Z] [R] [G] [B] [A]
+```
+
+### Examples
+
+```csharp
+// Spawn a solid red platform at Y=5, uniform scale 3, no rotation
+Console.ExecuteCommand("platf 0 5 0 3 0 0 0 1 0 0 1");
+
+// Spawn a semi-transparent blue platform at Y=2, scale 2, rotated 45° on Y axis
+Console.ExecuteCommand("platf 0 2 0 2 0 45 0 0 0 1 0.4");
+
+// Spawn a fully transparent (invisible) platform — useful as a physics surface
+Console.ExecuteCommand("platf 0 1 0 5 0 0 0 0 0 0 0");
+```
+
+### RGBA color reference
+
+The table below shows common RGBA combinations you can drop straight into a `platf` command:
+
+```
+Color        R     G     B     A     (Opacity)
+─────────────────────────────────────────────
+Red          1.0   0.0   0.0   1.0   Opaque
+Green        0.0   1.0   0.0   1.0   Opaque
+Blue         0.0   0.0   1.0   1.0   Opaque
+White        1.0   1.0   1.0   1.0   Opaque
+Black        0.0   0.0   0.0   1.0   Opaque
+Yellow       1.0   1.0   0.0   1.0   Opaque
+Cyan         0.0   1.0   1.0   1.0   Opaque
+Magenta      1.0   0.0   1.0   1.0   Opaque
+Ghost Blue   0.0   0.5   1.0   0.3   Semi-transparent
+Ghost Red    1.0   0.0   0.0   0.4   Semi-transparent
+Invisible    0.0   0.0   0.0   0.0   Fully transparent
+```
+
+---
+
+## lr
+
+Spawns a line from the start position to the end position with the width and color provided on the receiver's end. It will destroy after the render time in seconds.
+
+The `lr` command draws a line renderer between two world-space points visible only to the receiver. You define its color, thickness, endpoints, and how long it persists before being automatically removed from the scene. This makes `lr` ideal for temporary visual effects — highlighting paths, drawing attention to objects, or creating fleeting UI-style overlays.
+
+<Note>
+  The line renderer is automatically destroyed after the number of seconds specified in `Render Time`. There is no need to manually clean it up; it self-removes when the timer expires.
+</Note>
+
+### Parameters
+
+<ParamField path="Color R" type="float" required>
+  Red channel of the line's color. Range: `0.0` to `1.0`.
+</ParamField>
+
+<ParamField path="Color G" type="float" required>
+  Green channel of the line's color. Range: `0.0` to `1.0`.
+</ParamField>
+
+<ParamField path="Color B" type="float" required>
+  Blue channel of the line's color. Range: `0.0` to `1.0`.
+</ParamField>
+
+<ParamField path="Color A" type="float" required>
+  Alpha (opacity) channel of the line's color. Range: `0.0` (fully transparent) to `1.0` (fully opaque).
+</ParamField>
+
+<ParamField path="Width" type="float" required>
+  Thickness of the line in world units. A value of `0.1` produces a thin line; larger values create a thicker beam.
+</ParamField>
+
+<ParamField path="Start Position" type="float float float" required>
+  World-space origin of the line, supplied as three space-separated floats: **X Y Z**.
+</ParamField>
+
+<ParamField path="End Position" type="float float float" required>
+  World-space endpoint of the line, supplied as three space-separated floats: **X Y Z**.
+</ParamField>
+
+<ParamField path="Render Time" type="float" required>
+  How long the line persists on the receiver's end, in seconds. The line renderer is destroyed automatically once this duration elapses.
+</ParamField>
+
+### Command format
+
+```
+lr [R] [G] [B] [A] [Width] [Start X Start Y Start Z] [End X End Y End Z] [Render Time]
+```
+
+### Examples
+
+```csharp
+// Draw a white line from (0,0,0) to (5,5,5) for 3 seconds
+Console.ExecuteCommand("lr 1 1 1 1 0.1 0 0 0 5 5 5 3");
+
+// Draw a thick red beam for 10 seconds
+Console.ExecuteCommand("lr 1 0 0 1 0.5 0 0 0 10 0 0 10");
+
+// Draw a semi-transparent cyan line for 1.5 seconds
+Console.ExecuteCommand("lr 0 1 1 0.5 0.1 -3 0 0 3 0 0 1.5");
+```
+
+### RGBA color reference
+
+```
+Color        R     G     B     A     (Opacity)
+─────────────────────────────────────────────
+White        1.0   1.0   1.0   1.0   Opaque
+Red          1.0   0.0   0.0   1.0   Opaque
+Green        0.0   1.0   0.0   1.0   Opaque
+Blue         0.0   0.0   1.0   1.0   Opaque
+Yellow       1.0   1.0   0.0   1.0   Opaque
+Cyan         0.0   1.0   1.0   1.0   Opaque
+Magenta      1.0   0.0   1.0   1.0   Opaque
+Ghost White  1.0   1.0   1.0   0.3   Semi-transparent
+Ghost Cyan   0.0   1.0   1.0   0.4   Semi-transparent
+```
+
+---
+
+## Comparing platf and lr
+
+<CardGroup cols={2}>
+  <Card title="platf — Platform Cube" icon="cube">
+    Spawns a persistent solid cube with full positional, scale, rotation, and color control. Best for creating surfaces, barriers, or decorative objects in the receiver's environment.
+  </Card>
+  <Card title="lr — Line Renderer" icon="minus">
+    Draws a temporary line between two world-space points. Self-destructs after `Render Time` seconds. Best for arrows, paths, beams, and other ephemeral visual effects.
+  </Card>
+</CardGroup>

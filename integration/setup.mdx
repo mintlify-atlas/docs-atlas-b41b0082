@@ -1,0 +1,94 @@
+---
+title: "Setting Up Console in Your Gorilla Tag BepInEx Mod Project"
+sidebarTitle: "Project Setup"
+description: "Learn how to embed Console source files into your BepInEx mod, initialize the network layer, and wire up required components in your plugin class."
+---
+
+Console is designed to be embedded directly inside your own BepInEx mod rather than shipped as a separate dependency. This means you copy the Console source files into a subfolder of your project and call a single initializer — no NuGet packages or external DLL references required beyond the usual BepInEx and Gorilla Tag assemblies.
+
+## Prerequisites
+
+Before you begin, make sure you have a working BepInEx mod project targeting Gorilla Tag and that your project already compiles and loads in-game without errors. You will also need Git (or a browser) to download the Console source.
+
+## Setup Steps
+
+<Steps>
+  <Step title="Download the Console repository">
+    Clone or download the Console repository from GitHub. You can do this with Git or by downloading the ZIP directly from the releases page.
+
+    ```bash
+    git clone https://github.com/GTConsole/Console.git
+    ```
+
+    Alternatively, visit [github.com/GTConsole/Console](https://github.com/GTConsole/Console) and use the **Code → Download ZIP** option if you do not have Git installed.
+  </Step>
+
+  <Step title="Copy Console source files into your project">
+    Inside the cloned repository you will find the Console source files. Create a subfolder inside your mod project — for example `Console/` — and copy **all files except `Plugin.cs` and `PluginInfo.cs`** into it.
+
+    Your project structure should look something like this:
+
+    ```
+    YourMod/
+    ├── Plugin.cs              ← your existing plugin entry point
+    ├── Console/
+    │   ├── Console.cs
+    │   ├── ServerData.cs
+    │   ├── HamburburData.cs
+    │   └── TrackerManager.cs
+    └── YourMod.csproj
+    ```
+
+    <Note>
+      `Plugin.cs` and `PluginInfo.cs` are the standalone entry points for running Console as its own BepInEx plugin. When embedding Console into an existing mod you **must not** include these two files — doing so will introduce duplicate `BepInPlugin` attributes and cause BepInEx to fail to load.
+    </Note>
+  </Step>
+
+  <Step title="Add the initialization snippet to your plugin class">
+    Open your `BaseUnityPlugin` class and add the following code to your `Start()` method. This boots the Console network layer and attaches the two MonoBehaviour components Console needs to function:
+
+    ```csharp
+    void Start()
+    {
+        Console.LoadConsole();
+        gameObject.AddComponent<HamburburData>();
+        gameObject.AddComponent<TrackerManager>(); // Not needed but appreciated.
+    }
+    ```
+
+    <CardGroup cols={2}>
+      <Card title="HamburburData" icon="network-wired">
+        Handles all Console network data — incoming and outgoing messages between your mod and the Console network. This component is **required** for Console to function correctly.
+      </Card>
+      <Card title="TrackerManager" icon="users">
+        Tracks which users in the current room are also running Console. It is optional, but including it allows Console to maintain an up-to-date list of connected users and is **recommended** by the Console team.
+      </Card>
+    </CardGroup>
+  </Step>
+
+  <Step title="Configure Console.cs and ServerData.cs">
+    Before building, open `Console.cs` and `ServerData.cs` inside your `Console/` subfolder and fill in the `#region Configuration` blocks in each file. These regions contain mod identity, command handling settings, server endpoints, and authentication keys.
+
+    See the [Configuration](/integration/configuration) page for a full walkthrough of every setting.
+  </Step>
+
+  <Step title="Build and test your mod">
+    Compile your project as normal and drop the resulting `.dll` into your BepInEx `plugins/` folder. Launch Gorilla Tag and verify that Console initializes without errors in the BepInEx log.
+
+    ```
+    BepInEx/LogOutput.log
+    ```
+
+    <Tip>
+      Keep the BepInEx console window open while testing. Console logs its initialization status on startup, so any misconfiguration in `Console.cs` or `ServerData.cs` will surface as a log error before you enter a room.
+    </Tip>
+  </Step>
+</Steps>
+
+## What Happens at Runtime
+
+When `Console.LoadConsole()` is called, Console connects to its network backend using the credentials you configured in `ServerData.cs`. From that point on, any admin with authority over your mod's network identity can send commands to players running your mod in the same room. The `HamburburData` component processes those incoming packets on every frame, and `TrackerManager` (if attached) keeps a live roster of Console-enabled users nearby.
+
+<Info>
+  Players who install your mod but have **not** been granted admin authority can receive commands and events, but they cannot issue them. Issuing commands without authority has no effect on other clients.
+</Info>

@@ -1,0 +1,53 @@
+---
+title: "Console: The Network Admin Library for Gorilla Tag Mods"
+sidebarTitle: "Introduction"
+description: "Console is a network-backed admin library for Gorilla Tag BepInEx mods — authorized admins send real-time commands to any receiving player in the room."
+---
+
+Console is a network-backed administrator library built for Gorilla Tag BepInEx mods. It gives mod developers a shared command channel that authorized administrators can use to interact with any player who has Console installed and running in the same room. Whether you want to send real-time notifications, teleport players, manage audio and visuals, or handle room moderation, Console provides the infrastructure to do it — all without building a networking layer from scratch.
+
+## What Console Does
+
+Console operates on a clear authority model: **admins execute commands, users receive them**. When a player installs Console as a mod, they join the network as a receiver. Administrators — those granted authority through the system — can then issue commands that are delivered over the network to targeted receivers in real time.
+
+This separation means that simply having Console installed does **not** grant any special powers. Commands only flow when the sender holds the appropriate authority, which keeps the system controlled and intentional.
+
+<Note>
+  You must have admin authority on the Console network to execute commands. Installing Console as a user only enables you to *receive* commands issued by authorized administrators.
+</Note>
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Easy Integration" icon="plug" href="/quickstart">
+    Drop a few lines into your `BaseUnityPlugin` and your mod is connected to the Console network. No custom networking setup required.
+  </Card>
+  <Card title="Rich Command Set" icon="terminal" href="/quickstart#executing-commands">
+    Over 40 built-in commands covering moderation, physics, visuals, audio, assets, and more — all dispatched through a single `ExecuteCommand()` call.
+  </Card>
+  <Card title="Real-Time Interaction" icon="bolt" href="/quickstart">
+    Commands are delivered live to any player running Console in the same Gorilla Tag room, making in-game admin actions feel instant and responsive.
+  </Card>
+  <Card title="Simple Installation" icon="download" href="/installation">
+    Players install one `.dll` file. Developers copy a handful of source files into their project. No complex dependency chains or build steps.
+  </Card>
+</CardGroup>
+
+## How It Works
+
+Console runs as a BepInEx plugin inside Gorilla Tag. When your mod calls `Console.LoadConsole()`, it initializes the network connection and registers the necessary components. From that point on, the `HamburburData` component handles incoming and outgoing data packets, while `TrackerManager` monitors the Console users present in the room.
+
+Administrators issue commands using `Console.ExecuteCommand()`, passing a command string that targets the current receiver. Commands can be as simple as sending a notification or as complex as spawning a networked asset at a specific position and rotation.
+
+## Getting Started
+
+Ready to add Console to your mod or just want to play with it as a user?
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="circle-down" href="/installation">
+    Download `Console.dll` and get set up in under a minute — whether you're a player or a developer.
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Integrate Console into your BepInEx mod and send your first command in just a few steps.
+  </Card>
+</CardGroup>

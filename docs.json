@@ -1,72 +1,83 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "name": "Console",
+  "theme": "luma",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#70d48c",
+    "light": "#0a0a0c",
+    "dark": "#a983a8"
   },
-  "favicon": "/favicon.svg",
-  "navigation": {
-    "pages": [
-      {
-        "group": "Getting Started",
-        "pages": [
-          "index",
-          "quickstart"
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
+  "favicon": "https://media.brand.dev/bdf739f3-6a02-4ee0-82a7-dcb6d9999e09.png",
   "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:support@mintlify.com"
-      }
-    ],
     "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://app.mintlify.com"
+      "type": "github",
+      "href": "https://github.com/DeezVrOfficial/Console"
     }
-  },
-  "contextual": {
-    "options": [
-      "copy",
-      "view",
-      "chatgpt",
-      "claude",
-      "perplexity",
-      "mcp",
-      "cursor",
-      "vscode"
-    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "github": "https://github.com/DeezVrOfficial/Console"
     }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Integration Guide",
+            "pages": [
+              "integration/setup",
+              "integration/configuration",
+              "integration/events"
+            ]
+          },
+          {
+            "group": "Asset System",
+            "pages": [
+              "assets/overview",
+              "assets/preloaded-assets",
+              "assets/asset-management"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Command Reference",
+        "groups": [
+          {
+            "group": "Player Commands",
+            "pages": [
+              "commands/player-management",
+              "commands/movement-physics",
+              "commands/cosmetics-appearance"
+            ]
+          },
+          {
+            "group": "World & Object Commands",
+            "pages": [
+              "commands/world-environment",
+              "commands/object-spawning",
+              "commands/asset-commands"
+            ]
+          },
+          {
+            "group": "Utility Commands",
+            "pages": [
+              "commands/discovery-utility",
+              "commands/lua-scripting"
+            ]
+          }
+        ]
+      }
+    ]
   }
 }
