@@ -1,14 +1,10 @@
 ---
-title: "Run Lua Scripts Remotely with exec-safe"
+title: "Remotely Run Lua Scripts Using the exec-safe Command"
 sidebarTitle: "Lua Scripting"
-description: "Learn how to use exec-safe to trigger named SafeLua scripts on receivers — covering registration, the SafeLua sandbox, and remote execution workflow."
+description: "Learn how to use the exec-safe command to remotely trigger pre-registered SafeLua scripts by name on a target receiver's Console instance."
 ---
 
-The `exec-safe` command is Console's bridge to Lua scripting. It allows a Console administrator to remotely trigger a named Lua script that has been pre-registered with the SafeLua engine on the receiver's client. Rather than sending raw code over the network, `exec-safe` uses a name-based lookup: the receiver's mod holds the actual script logic, and the admin simply invokes it by name. This design keeps arbitrary code off the wire while still giving mod developers a flexible, scriptable execution hook on the receiver's end.
-
-<Info>
-  SafeLua is a sandboxed Lua execution environment. It exposes a safe subset of Lua capabilities, preventing scripts from accessing unauthorized system resources or game internals beyond what the sandbox explicitly permits. This is the security boundary that makes remote script execution viable in a shared game environment.
-</Info>
+The `exec-safe` command lets a Console administrator remotely trigger a named Lua script on the receiver's client. Rather than sending raw Lua code over the network, `exec-safe` uses a name-based lookup — the receiver's mod holds the actual script, and the admin invokes it by name. This design keeps arbitrary code off the wire while still giving mod developers a flexible, scriptable execution hook on the receiver's end.
 
 ---
 
@@ -21,49 +17,28 @@ exec-safe [Lua Script Name]
 Runs a lua script in SafeLua by name on the receiver.
 
 <ParamField path="Lua Script Name" type="string" required>
-  The name of the Lua script as it was registered with SafeLua on the receiver's Console instance. This must exactly match the registration name; Console performs a name-based lookup to find and run the script.
+  The name of the Lua script to execute on the receiver's Console instance. Console performs a name-based lookup to find and run the script.
 </ParamField>
 
 <Warning>
   You **cannot** send arbitrary Lua code through `exec-safe`. Only scripts that have been pre-registered on the receiver's Console instance can be executed. Attempting to invoke an unregistered script name will result in a no-op on the receiver's end.
 </Warning>
 
-<Note>
-  Scripts must be registered on the receiver's Console instance before they can be executed remotely. Registration happens at mod startup on the receiver's side — the admin-side call simply names the script to run.
-</Note>
-
 ---
 
-## Workflow
+## Example
 
-Before an admin can trigger a script, the receiver's mod must have it registered with SafeLua. Once that is in place, triggering it is a single command call.
-
-### 1. Define and Register the Script on the Receiver's Mod
-
-In your receiver-side BepInEx mod, register a Lua script with SafeLua during initialization. The name you register here is the name you will pass to `exec-safe`.
+The following example triggers a script named `greetUser` on the receiver. The script itself is defined on the receiver's mod — the admin only sends the name.
 
 ```lua
--- Example SafeLua script: "greetUser"
+-- Example SafeLua script: "greetUser" (defined on the receiver's mod)
 notify("Hello from a Lua script!")
 ```
 
-### 2. Trigger the Script via exec-safe
-
-Once the receiver is running with the script registered, an authorized admin can invoke it remotely by name:
-
 ```csharp
+// Trigger the pre-registered "greetUser" script on the receiver
 Console.ExecuteCommand("exec-safe greetUser");
 ```
-
-Console will send the `exec-safe greetUser` command to the target receiver. Their client looks up `greetUser` in the SafeLua registry and executes it inside the sandbox.
-
----
-
-## FAQ
-
-<Accordion title="What Lua functions are available in SafeLua?">
-  SafeLua exposes a sandboxed subset of Lua's standard capabilities. The exact set of permitted functions and globals is defined by the SafeLua implementation bundled with Console. For a complete list of available functions, refer to the SafeLua documentation included with your Console distribution.
-</Accordion>
 
 ---
 
@@ -71,5 +46,5 @@ Console will send the `exec-safe greetUser` command to the target receiver. Thei
 
 For sending commands alongside or before Lua scripts, see:
 
-- [Asset Commands](/commands/asset-commands) — spawn and control in-game objects
-- [Discovery & Utility Commands](/commands/discovery-utility) — confirm Console presence with `isusing` before executing scripts
+- [Asset Commands](commands/asset-commands) — spawn and control in-game objects
+- [Discovery & Utility Commands](commands/discovery-utility) — confirm Console presence with `isusing` before executing scripts

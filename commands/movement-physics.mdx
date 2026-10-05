@@ -117,7 +117,7 @@ Console.ExecuteCommand(receiver, "rigposition true 0 1 0 0 0 0 -0.5 1 0 0 0 0 0.
 Holds down or releases a specific controller button on the receiver's end for a set duration.
 
 <ParamField path="Button" type="string" required>
-  The name of the controller button to simulate. Valid button names depend on the VR SDK in use (e.g., `PrimaryButton`, `SecondaryButton`, `GripButton`, `TriggerButton`).
+  The name of the controller button to simulate.
 </ParamField>
 
 <ParamField path="Value" type="bool" required>
@@ -145,16 +145,12 @@ Console.ExecuteCommand(receiver, "controller GripButton false 0");
 Vibrates the receiver's controllers for the specified duration.
 
 <ParamField path="Vibrate Type" type="string" required>
-  The type or pattern of vibration to apply. Valid values depend on the VR SDK being used by the receiver's setup.
+  The type or pattern of vibration to apply.
 </ParamField>
 
 <ParamField path="Duration Seconds" type="float" required>
   How long (in seconds) to vibrate the controllers.
 </ParamField>
-
-<Info>
-  The valid values for `Vibrate Type` are determined by the underlying VR SDK. Refer to the VR SDK documentation for supported haptic feedback types if you need specific patterns.
-</Info>
 
 ```csharp
 // Vibrate the receiver's controllers for 1.5 seconds

@@ -1,14 +1,14 @@
 ---
 title: "Handling Asynchronous Console Events and Command Responses"
 sidebarTitle: "Events"
-description: "Understand how Console delivers events to your mod, including the isusing/confirmusing handshake and how to register handlers after initialization."
+description: "Understand how Console delivers events to your mod, including the isusing/confirmusing handshake and how to handle response events after initialization."
 ---
 
 Console's communication model is asynchronous and network-driven. When an admin issues a command to a player running your mod, Console delivers that command over its own network layer — not through Photon or Gorilla Tag's built-in RPC system. Some commands are fire-and-forget (they execute silently on the receiver), but others trigger an **event response** that travels back to the sender. Understanding how these response events work is essential for building admin tooling on top of Console.
 
 ## How the Event Model Works
 
-Commands flow in one direction: from an admin with authority, outward to connected receivers. Certain commands, however, instruct the receiver's Console instance to send a reply event back across the network. These reply events arrive **asynchronously** — there is no blocking call or callback return value. Instead, you register handlers in your `BaseUnityPlugin` class after calling `Console.LoadConsole()`, and Console invokes those handlers whenever a matching event is received.
+Commands flow in one direction: from an admin with authority, outward to connected receivers. Certain commands instruct the receiver's Console instance to send a reply event back across the network. These reply events arrive **asynchronously** — there is no blocking call or callback return value. Your embedded copy of Console handles incoming events via the `HamburburData` component's update loop.
 
 <Note>
   Only commands issued by an admin who holds authority over your mod's Console network identity will cause events to fire on a receiver. Messages from non-admin users are silently ignored by Console before they ever reach your handler code.
@@ -16,7 +16,7 @@ Commands flow in one direction: from an admin with authority, outward to connect
 
 ## The `isusing` / `confirmusing` Handshake
 
-The most commonly used event flow is the presence check. An admin sends the `isusing` command to a target player. If that player is running a mod with Console embedded, their Console instance automatically replies with a `confirmusing` event that includes the **mod name** configured in `Console.cs`. This lets admins discover which Console-enabled mods are active in a room without requiring any manual player reporting.
+The only documented event response in Console is the presence check. An admin sends the `isusing` command to a target player. If that player is running a mod with Console embedded, their Console instance automatically replies with a `confirmusing` event that includes the **mod name** configured in `Console.cs`. This lets admins discover which Console-enabled mods are active in a room without requiring any manual player reporting.
 
 ### Flow Diagram
 
@@ -36,40 +36,30 @@ The most commonly used event flow is the presence check. An admin sends the `isu
     The event payload contains the mod name string you set in the `#region Configuration` block of `Console.cs`.
   </Step>
 
-  <Step title="Admin receives confirmusing and parses the mod name">
-    Back on the admin's client, the `confirmusing` event arrives asynchronously. Register a handler after `Console.LoadConsole()` to capture this event and read the mod name from the payload:
+  <Step title="Admin receives confirmusing and reads the mod name">
+    Back on the admin's client, the `confirmusing` event arrives asynchronously. How you receive and handle this event depends on the event wiring inside your embedded copy of Console — consult the `#region Configuration` block in `Console.cs` for the precise mechanism exposed in your version.
+
+    When the event arrives, the payload contains the mod name of the responding client:
 
     ```csharp
-    void Start()
+    // Conceptual example — your event handler receives the confirmusing payload
+    void YourEventHandler(/* parameters depend on your Console version */)
     {
-        Console.LoadConsole();
-        gameObject.AddComponent<HamburburData>();
-        gameObject.AddComponent<TrackerManager>();
-
-        // Register a handler for incoming Console events
-        Console.OnEventReceived += HandleConsoleEvent;
-    }
-
-    void HandleConsoleEvent(string eventName, string payload)
-    {
-        if (eventName == "confirmusing")
-        {
-            // payload contains the mod name of the responding client
-            string modName = payload;
-            Debug.Log($"[Console] Detected Console user running: {modName}");
-        }
+        // The payload contains the mod name of the responding client
+        string modName = /* extract from payload */;
+        Debug.Log($"[Console] Detected Console user running: {modName}");
     }
     ```
 
     <Note>
-      The exact event handler signature (`Console.OnEventReceived`) follows the pattern established in the Console source. Consult the `#region Configuration` block in `Console.cs` for the precise delegate type and any additional event fields exposed in your embedded copy.
+      The exact event handler signature and registration method are defined inside the Console source files you embedded. Refer to the `#region Configuration` block in `Console.cs` for the delegate type and any additional event fields available in your copy.
     </Note>
   </Step>
 </Steps>
 
-## Registering Event Handlers
+## Handling Events in Your Plugin
 
-All event handlers must be registered **after** `Console.LoadConsole()` is called. Registering before initialization may result in handlers being overwritten or silently dropped during the Console startup sequence.
+Your event handler code should be wired up after `Console.LoadConsole()` is called. The `HamburburData` component processes Console network packets each frame and delivers events on the main Unity thread, so it is safe to call Unity APIs directly inside your handler.
 
 ```csharp
 void Start()
@@ -78,51 +68,22 @@ void Start()
     gameObject.AddComponent<HamburburData>();
     gameObject.AddComponent<TrackerManager>(); // Optional but recommended
 
-    // Safe to register handlers here — Console is initialized
-    Console.OnEventReceived += HandleConsoleEvent;
-}
-
-void OnDestroy()
-{
-    // Always unsubscribe to avoid memory leaks when the plugin unloads
-    Console.OnEventReceived -= HandleConsoleEvent;
-}
-
-void HandleConsoleEvent(string eventName, string payload)
-{
-    switch (eventName)
-    {
-        case "confirmusing":
-            // A user confirmed they are running a Console-enabled mod
-            // payload = the mod name they reported
-            break;
-
-        default:
-            // Handle or log any other events your mod cares about
-            break;
-    }
+    // Wire up your event handler here — after Console is initialized
+    // Refer to Console.cs for the specific registration API in your embedded copy
 }
 ```
 
-<Tip>
-  Unsubscribe from `Console.OnEventReceived` in `OnDestroy()`. BepInEx plugins are long-lived objects, but if your scene or plugin is ever torn down, dangling delegates can cause `NullReferenceException` errors during event dispatch.
-</Tip>
-
-## Events Are Asynchronous
-
-Console delivers events on the main Unity thread via the `HamburburData` component's update loop, so it is safe to call Unity APIs (including `Debug.Log`, `GameObject` operations, and UI updates) directly inside your handler. However, because events arrive at an indeterminate time after a command is sent, you should **never block** waiting for a response. Use flags, queues, or coroutines if your logic needs to act once a reply arrives.
+Because events arrive at an indeterminate time after a command is sent, you should **never block** waiting for a response. Use flags, queues, or coroutines if your logic needs to act once a reply arrives.
 
 ```csharp
 // Example: use a flag to act once confirmusing is received
 private bool _consoleUserDetected = false;
 
-void HandleConsoleEvent(string eventName, string payload)
+// Conceptual handler — signature matches whatever Console.cs defines
+void YourEventHandler(/* parameters depend on your Console version */)
 {
-    if (eventName == "confirmusing")
-    {
-        _consoleUserDetected = true;
-        // Optionally start a coroutine or update UI here
-    }
+    // Check for confirmusing event and record the mod name
+    _consoleUserDetected = true;
 }
 ```
 
@@ -132,4 +93,4 @@ void HandleConsoleEvent(string eventName, string payload)
 
 ## Further Reading
 
-For a complete list of every command that can be sent — and which ones produce response events — see the [Command Reference](/introduction). Commands that produce a reply event are noted alongside their descriptions.
+For a complete list of every command that can be sent — including `isusing` — see the command reference pages. The `isusing` command is the only command documented to produce a reply event (`confirmusing`).

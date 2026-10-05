@@ -67,9 +67,9 @@ Before you begin, make sure you have a working BepInEx mod project targeting Gor
   </Step>
 
   <Step title="Configure Console.cs and ServerData.cs">
-    Before building, open `Console.cs` and `ServerData.cs` inside your `Console/` subfolder and fill in the `#region Configuration` blocks in each file. These regions contain mod identity, command handling settings, server endpoints, and authentication keys.
+    Before building, open `Console.cs` and `ServerData.cs` inside your `Console/` subfolder and fill in the `#region Configuration` blocks in each file.
 
-    See the [Configuration](/integration/configuration) page for a full walkthrough of every setting.
+    See the [Configuration](/integration/configuration) page for a full walkthrough of the configuration regions.
   </Step>
 
   <Step title="Build and test your mod">
@@ -80,15 +80,15 @@ Before you begin, make sure you have a working BepInEx mod project targeting Gor
     ```
 
     <Tip>
-      Keep the BepInEx console window open while testing. Console logs its initialization status on startup, so any misconfiguration in `Console.cs` or `ServerData.cs` will surface as a log error before you enter a room.
+      Keep the BepInEx console window open while testing so any misconfiguration in `Console.cs` or `ServerData.cs` surfaces in the log before you enter a room.
     </Tip>
   </Step>
 </Steps>
 
 ## What Happens at Runtime
 
-When `Console.LoadConsole()` is called, Console connects to its network backend using the credentials you configured in `ServerData.cs`. From that point on, any admin with authority over your mod's network identity can send commands to players running your mod in the same room. The `HamburburData` component processes those incoming packets on every frame, and `TrackerManager` (if attached) keeps a live roster of Console-enabled users nearby.
+When `Console.LoadConsole()` is called, Console initializes its network layer using the settings you configured in `Console.cs` and `ServerData.cs`. The `HamburburData` component processes incoming Console network packets each frame, and `TrackerManager` (if attached) keeps a live roster of Console-enabled users nearby.
 
 <Info>
-  Players who install your mod but have **not** been granted admin authority can receive commands and events, but they cannot issue them. Issuing commands without authority has no effect on other clients.
+  Players who install your mod but have **not** been granted admin authority can receive commands and events, but they cannot issue them.
 </Info>

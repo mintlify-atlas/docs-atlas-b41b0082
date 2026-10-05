@@ -36,10 +36,10 @@ Console.ExecuteCommand("weather false");
 
 Sets whether it's raining or not for the client.
 
-The `time` command accepts a time value that controls the time of day as seen by the receiver. Document the parameter exactly as the README describes it — the underlying description in the README reads: *"Sets whether it's raining or not for the client."*
+The `time` command accepts a `[Time]` value and sets whether it's raining or not for the receiver's client.
 
-<ParamField path="Time" type="float" required>
-  The time value to apply on the receiver's client.
+<ParamField path="Time" required>
+  The value to apply on the receiver's client.
 </ParamField>
 
 ```csharp

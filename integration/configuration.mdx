@@ -1,7 +1,7 @@
 ---
 title: "Configuring Console.cs and ServerData.cs for Your Mod"
 sidebarTitle: "Configuration"
-description: "A guide to the Configuration regions inside Console.cs and ServerData.cs — covering mod identity, admin checks, server endpoints, and authentication keys."
+description: "A guide to the Configuration regions inside Console.cs and ServerData.cs — the two files you must edit before Console will work correctly in your mod."
 ---
 
 After copying Console's source files into your project, two files require your attention before the library will work correctly: `Console.cs` and `ServerData.cs`. Each file contains a clearly marked `#region Configuration` block that groups every setting you are expected to change. Everything outside those regions is internal Console logic that you should leave untouched.
@@ -12,62 +12,23 @@ After copying Console's source files into your project, two files require your a
 
 ## Console.cs — Mod Identity and Command Handling
 
-`Console.cs` is the main library file. Its `#region Configuration` block is where you tell Console which mod it belongs to, how to distinguish admins from regular users, and how incoming commands should be dispatched.
-
-### Settings at a Glance
-
-<CardGroup cols={2}>
-  <Card title="Mod Identity" icon="tag">
-    A string that identifies your mod on the Console network. This is the name returned to an admin when they run the `isusing` command against one of your users.
-  </Card>
-  <Card title="Command Handling" icon="terminal">
-    Hooks that let you extend Console's built-in command set or override how specific commands are processed within your mod's context.
-  </Card>
-  <Card title="Admin Checks" icon="shield-check">
-    Logic that determines which user IDs or credentials are recognized as having admin authority over your mod's Console instance.
-  </Card>
-  <Card title="Log Output" icon="scroll">
-    Controls how Console writes diagnostic information, letting you route output to BepInEx's log, an in-game overlay, or suppress it entirely.
-  </Card>
-</CardGroup>
-
-### Locating the Region
-
-Open `Console.cs` in your editor and search for:
+`Console.cs` is the main library file. Its `#region Configuration` block is where you tell Console which mod it belongs to and how incoming commands should be handled. Open `Console.cs` in your editor and search for:
 
 ```csharp
 #region Configuration
 ```
 
-All fields between that marker and the matching `#endregion` are yours to modify. Do not rename or remove any field — only change the values assigned to them.
+All fields between that marker and the matching `#endregion` are yours to modify. Fill in each field according to the inline comments in the source. Do not rename or remove any field — only change the values assigned to them.
 
 ## ServerData.cs — Network and Authentication
 
-`ServerData.cs` holds the networking configuration: where Console connects, how it identifies itself on the wire, and what credentials it uses to authenticate with the Console backend. Like `Console.cs`, all tunable settings live inside a `#region Configuration` block.
-
-### Settings at a Glance
-
-<CardGroup cols={2}>
-  <Card title="Server Endpoints" icon="server">
-    The URLs or addresses Console uses to connect to the network backend. These are provided to you as part of the Console developer programme.
-  </Card>
-  <Card title="Network Identity" icon="fingerprint">
-    A unique identifier for your mod's Console session. This separates your mod's traffic from other mods running Console simultaneously.
-  </Card>
-  <Card title="Authentication Keys" icon="key">
-    Secret keys used to verify your mod's identity with the Console backend. Keep these private.
-  </Card>
-</CardGroup>
-
-### Locating the Region
-
-Open `ServerData.cs` and search for:
+`ServerData.cs` holds the networking configuration that Console uses to connect to its backend. Like `Console.cs`, all tunable settings live inside a `#region Configuration` block. Open `ServerData.cs` and search for:
 
 ```csharp
 #region Configuration
 ```
 
-Fill in each field with the values specific to your mod. Fields left at their defaults will cause Console to fail to authenticate on startup.
+Fill in each field with the values specific to your mod. Fields left at their defaults will prevent Console from connecting or authenticating correctly on startup.
 
 <Warning>
   **Never commit real authentication keys or server credentials to a public repository.** If your source code is hosted on GitHub or any other public platform, an exposed key can be abused by anyone to impersonate your mod on the Console network. Rotate your keys immediately if they are accidentally published.
@@ -75,29 +36,14 @@ Fill in each field with the values specific to your mod. Fields left at their de
 
 ## Keeping Credentials Safe
 
-<Tip>
-  For open-source mods, consider loading sensitive values at runtime instead of hard-coding them. Unity's `PlayerPrefs` can store a key locally on a developer's machine, or you can read from an environment variable during a CI/CD build. This way your repository only contains placeholder strings and the real values never appear in version control.
-
-  ```csharp
-  // Example: load a key from PlayerPrefs at runtime
-  string authKey = PlayerPrefs.GetString("ConsoleAuthKey", string.Empty);
-  ```
-</Tip>
+For open-source mods, consider loading sensitive values at runtime rather than hard-coding them in the configuration region. This way your repository only ever contains placeholder strings and the real values never appear in version control.
 
 ## Frequently Asked Questions
 
-<Accordion title="What if I don't configure ServerData.cs?">
-  Console will attempt to connect to the backend using default or empty values. In practice this means the authentication handshake will fail and Console will not receive or dispatch any commands. Your mod will still load — Console is designed not to throw fatal exceptions on misconfiguration — but the network layer will be inactive. Always fill in `ServerData.cs` before shipping a build.
-</Accordion>
-
-<Accordion title="Can I change configuration values at runtime?">
-  The `#region Configuration` fields in both files are read during `Console.LoadConsole()`. Changing them after that call has no effect in the current session. If you need dynamic configuration (for example, letting the user enter a custom server address), assign the fields before calling `Console.LoadConsole()` in your `Start()` method.
-</Accordion>
-
 <Accordion title="Do I need separate configuration for each mod I build?">
-  Yes. Because you embed a full copy of Console's source in each project, every mod has its own `Console.cs` and `ServerData.cs`. Each copy should have a unique network identity and its own authentication keys so that admins can target individual mods independently.
+  Yes. Because you embed a full copy of Console's source in each project, every mod has its own `Console.cs` and `ServerData.cs`. Each copy should be configured independently so that admins can target individual mods separately.
 </Accordion>
 
-<Accordion title="What is the network identity field used for?">
-  The network identity uniquely labels your mod's Console session on the backend. When an admin queries `isusing`, the identity string is part of the `confirmusing` response that comes back, letting the admin know exactly which mod they are talking to. Choose a concise, descriptive name that matches your mod's display name.
+<Accordion title="What is the mod name field used for?">
+  The mod name configured in `Console.cs` is returned as part of the `confirmusing` event when another Console user sends the `isusing` command to one of your players. Choose a concise, descriptive name that matches your mod's display name.
 </Accordion>
